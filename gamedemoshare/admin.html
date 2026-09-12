@@ -1,0 +1,458 @@
+
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>站长控制台</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin:0;
+            padding:0;
+            font-family: system-ui, sans-serif;
+        }
+        body{
+            background:#12121b;
+            color:#eee;
+            max-width:1200px;
+            margin:0 auto;
+            padding:20px;
+        }
+        .password-lock{
+            max-width:420px;
+            margin:100px auto;
+        }
+        .tab-wrap{
+            margin-bottom:16px;
+        }
+        .tab-btn{
+            padding:10px 18px;
+            background:#272735;
+            border:none;
+            color:#aaa;
+            cursor:pointer;
+        }
+        .tab-btn.active{
+            background:#217ad9;
+            color:white;
+        }
+        .tab-panel{
+            display:none;
+            padding:16px;
+            background:#1e1e2f;
+            border-radius:8px;
+        }
+        .tab-panel.show{
+            display:block;
+        }
+        .form-item{
+            margin-bottom:14px;
+        }
+        label{
+            display:block;
+            margin-bottom:4px;
+        }
+        textarea,input{
+            width:100%;
+            padding:10px;
+            background:#272735;
+            border:1px solid #444;
+            color:#fff;
+            border-radius:4px;
+        }
+        button{
+            padding:8px 14px;
+            border:none;
+            border-radius:4px;
+            cursor:pointer;
+            margin:2px;
+        }
+        button:disabled{
+            opacity:0.4;
+            cursor:not-allowed;
+        }
+        .btn-blue{background:#217ad9;color:white;}
+        .btn-orange{background:#d47500;color:white;}
+        .btn-red{background:#b82424;color:white;}
+        .btn-green{background:#209944;color:white;}
+        .row-item{
+            padding:12px;
+            border-bottom:1px solid #333;
+        }
+        .row-item.apply-promote{
+            border:1px solid #ffb300;
+            background:#2b261a;
+        }
+        .inline-input{
+            width:320px;
+            display:inline-block;
+        }
+        .header-bar{
+            display:flex;
+            justify-content:space-between;
+            align-items:center;
+            margin-bottom:12px;
+        }
+        .feedback-card{
+            border:1px solid #444;
+            padding:12px;
+            border-radius:6px;
+            margin-bottom:10px;
+        }
+        .small-note{
+            font-size:12px;
+            color:#aaa;
+            margin-top:4px;
+        }
+    </style>
+</head>
+<body>
+    <div class="password-lock" id="lockScreen">
+        <h2>站长后台登录（Supabase账号）</h2>
+        <div class="form-item">
+            <label>管理员邮箱</label>
+            <input type="email" id="adminEmail" placeholder="zhoulou_1219qqcom@qq.com">
+        </div>
+        <div class="form-item">
+            <label>密码</label>
+            <input type="password" id="adminPwd">
+        </div>
+        <div id="lockTip" style="color:#ff8888;margin:8px 0;"></div>
+        <button class="btn-blue" id="loginBtn">登录后台</button>
+    </div>
+    <div id="adminMain" style="display:none;">
+        <div class="header-bar">
+            <h1>站长总控制台</h1>
+            <button class="btn-red" id="logoutBtn">退出登录</button>
+        </div>
+        <div class="tab-wrap">
+            <button class="tab-btn active" data-tab="tab-setting">网站设置</button>
+            <button class="tab-btn" data-tab="tab-game">游戏管理</button>
+            <button class="tab-btn" data-tab="tab-review">评论管理</button>
+            <button class="tab-btn" data-tab="tab-feedback">站长信箱</button>
+        </div>
+        <div class="tab-panel show" id="tab-setting">
+            <h3>全局网站配置</h3>
+            <div class="form-item">
+                <label>网站公告</label>
+                <textarea id="inputNotice" rows="4"></textarea>
+            </div>
+            <div class="form-item">
+                <label>首页简介 Hero介绍</label>
+                <textarea id="inputIntro" rows="4"></textarea>
+            </div>
+            <button class="btn-blue" id="saveSettingBtn">保存修改</button>
+        </div>
+        <div class="tab-panel" id="tab-game">
+            <h3>全部游戏管理列表 <span style="color:#ffb300;font-size:14px;">(黄色边框=用户提交曝光申请待处理)</span></h3>
+            <div id="gameListBox"></div>
+        </div>
+        <div class="tab-panel" id="tab-review">
+            <h3>全部评论管理</h3>
+            <div id="reviewListBox"></div>
+        </div>
+        <div class="tab-panel" id="tab-feedback">
+            <h3>站长信箱｜用户反馈</h3>
+            <div id="feedbackListBox"></div>
+        </div>
+    </div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+const SUPABASE_URL = "https://kczxtbmgigbfofdzkynm.supabase.co";
+const SUPABASE_ANON_KEY = "sb_publishable_jiyD19NDY1DEc7jVFOQzaw_I-85Ncte";
+const { createClient } = window.supabase;
+const client = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+const lockScreen = document.getElementById("lockScreen");
+const adminMain = document.getElementById("adminMain");
+const loginBtn = document.getElementById("loginBtn");
+const logoutBtn = document.getElementById("logoutBtn");
+const lockTip = document.getElementById("lockTip");
+(async function checkSession(){
+    const {data:{session}} = await client.auth.getSession();
+    if(session){
+        showAdminPanel();
+    }
+})();
+loginBtn.onclick = async function(){
+    lockTip.innerText = "";
+    const email = document.getElementById("adminEmail").value.trim();
+    const pwd = document.getElementById("adminPwd").value;
+    if(!email||!pwd){
+        lockTip.innerText="请填写邮箱和密码";
+        return;
+    }
+    try{
+        const {error} = await client.auth.signInWithPassword({email, password:pwd});
+        if(error) throw error;
+        showAdminPanel();
+    }catch(err){
+        lockTip.innerText = "登录失败："+err.message;
+    }
+};
+logoutBtn.onclick = async function(){
+    await client.auth.signOut();
+    adminMain.style.display = "none";
+    lockScreen.style.display = "block";
+};
+function showAdminPanel(){
+    lockScreen.style.display = "none";
+    adminMain.style.display = "block";
+    initAdminPage();
+}
+document.querySelectorAll(".tab-btn").forEach(btn=>{
+    btn.onclick = function(){
+        document.querySelectorAll(".tab-btn").forEach(b=>b.classList.remove("active"));
+        document.querySelectorAll(".tab-panel").forEach(p=>p.classList.remove("show"));
+        this.classList.add("active");
+        const tabId = this.dataset.tab;
+        document.getElementById(tabId).classList.add("show");
+    }
+})
+async function initAdminPage(){
+    await loadSettingData();
+    await loadAllGames();
+    await loadAllReviews();
+    await loadFeedbacks();
+}
+
+async function loadSettingData(){
+    try{
+        const {data,error}=await client.from("settings").select("*").eq("id",1).maybeSingle();
+        if(error) throw error;
+        const row = data || { notice:"", intro:"" };
+        document.getElementById("inputNotice").value = row.notice||"";
+        document.getElementById("inputIntro").value = row.intro||"";
+    }catch(err){
+        console.warn("读取设置：",err.message);
+    }
+}
+
+document.getElementById("saveSettingBtn").onclick = async function(){
+    const btn = this;
+    btn.disabled=true;
+    try{
+        const notice = document.getElementById("inputNotice").value;
+        const intro = document.getElementById("inputIntro").value;
+        const {error}=await client.from("settings").upsert({id:1, notice,intro});
+        if(error) throw error;
+        alert("保存成功，已经即时生效！");
+    }catch(err){
+        alert("保存失败："+err.message);
+    }finally{
+        btn.disabled=false;
+    }
+}
+
+async function loadAllGames(){
+    const box = document.getElementById("gameListBox");
+    box.innerHTML="加载中...";
+    try{
+        const {data,error}=await client.from("demos").select("*").order("created_at",{ascending:false});
+        if(error) throw error;
+        let html = "";
+        data.forEach(g=>{
+            const isPendingApply = !!g.apply_promote && !g.sponsored;
+            const highlightClass = isPendingApply ? "row-item apply-promote" : "row-item";
+            let showExpire = "";
+            if(g.promote_expire){
+                showExpire = new Date(g.promote_expire).toLocaleString();
+            }
+            let amountText = g.promote_amount ? `申请人期望金额：¥${g.promote_amount}`:"申请人未填写金额";
+            const devStage = escapeHtml(g.dev_stage || "概念原型");
+            const devLogText = escapeHtml(g.dev_log || "无");
+            const viewCount = g.view_count ?? 0;
+            // 联系邮箱：只要不为空就展示（申请曝光的高亮条目优先展示，加粗加亮色方便站长复制）
+            let contactEmailHtml = "";
+            if(g.contact_email){
+                const mailStyle = isPendingApply ? "font-weight:bold;color:#73d0ff;" : "color:#73d0ff;";
+                contactEmailHtml = `<div class="small-note" style="${mailStyle}">📧 联系邮箱：${escapeHtml(g.contact_email)}</div>`;
+            }
+
+            html += `<div class="${highlightClass}">
+                <div><b>${escapeHtml(g.name)}</b>
+                | status:${g.status}
+                | 开发阶段:${devStage}
+                | 👀浏览量:${viewCount}
+                | 用户申请曝光:${g.apply_promote?"✅是":"❌否"}
+                | 已启用付费曝光:${g.sponsored?"✅已启用":"❌未启用"}
+                | ${isPendingApply ? `<span style="color:#ffdd77">${amountText}</span>`:""}
+                | 曝光到期(本地):${escapeHtml(showExpire)}</div>
+                <div class="small-note">开发者动态：${devLogText}</div>
+                ${contactEmailHtml}
+                <div style="margin:6px 0;">
+                    <input class="inline-input" type="text" id="expire_${g.id}" placeholder="例：2026‑12‑31 23:59" value="">
+                    <span style="color:#aaa;font-size:12px;">填写曝光到期时间（批准申请时使用）</span>
+                </div>
+                <div>`;
+            if(g.apply_promote){
+                html += `<button class="btn-green" onclick="approveSponsor('${g.id}')">批准并启用曝光</button>
+                <button class="btn-orange" onclick="rejectSponsor('${g.id}')">拒绝申请</button>`;
+            }
+            if(g.sponsored){
+                html += `<button class="btn-red" onclick="stopSponsor('${g.id}')">停止曝光</button>`;
+            }
+            html += `<button class="btn-orange" onclick="toggleStatus('${g.id}','${g.status}')">${g.status==='inactive'?"重新上架":"强制下架"}</button>
+            <button class="btn-red" onclick="deleteGame('${g.id}')">彻底删除</button>
+            </div></div>`;
+        })
+        box.innerHTML = html||"<p>暂无游戏</p>";
+    }catch(err){
+        box.innerHTML="读取游戏失败："+err.message;
+    }
+}
+
+window.approveSponsor = async function(gameId){
+    const inputDom = document.getElementById("expire_"+gameId);
+    const localTimeStr = inputDom.value.trim();
+    if(!localTimeStr){
+        alert("请填写曝光到期时间！格式示例：2026‑12‑31 23:59");
+        return;
+    }
+    const d = new Date(localTimeStr);
+    if(isNaN(d.getTime())){
+        alert("时间格式错误！");
+        return;
+    }
+    const payload = {
+        sponsored:true,
+        promote_expire: d.toISOString(),
+        apply_promote:false
+    };
+    try{
+        const {error}=await client.from("demos").update(payload).eq("id",gameId);
+        if(error) throw error;
+        alert("✅已批准并启用付费曝光");
+        await loadAllGames();
+    }catch(e){
+        alert("操作失败："+e.message);
+    }
+}
+window.rejectSponsor = async function(gameId){
+    if(!confirm("确定拒绝该曝光申请？将清除用户申请标记。")) return;
+    try{
+        const {error}=await client.from("demos").update({apply_promote:false}).eq("id",gameId);
+        if(error) throw error;
+        alert("✅已拒绝申请");
+        await loadAllGames();
+    }catch(e){
+        alert("操作失败："+e.message);
+    }
+}
+
+window.stopSponsor = async function(gameId){
+    if(!confirm("确认停止该项目付费曝光？")) return;
+    try{
+        const {error}=await client.from("demos")
+            .update({
+                sponsored: false,
+                promote_expire: null,
+                apply_promote: false
+            })
+            .eq("id",gameId);
+        if(error) throw error;
+        alert("✅已停止曝光");
+        await loadAllGames();
+    }catch(e){
+        alert("操作失败："+e.message);
+    }
+}
+
+window.toggleStatus = async function(id,status){
+    const newStatus = status==="inactive"?"active":"inactive";
+    try{
+        const {error}=await client.from("demos").update({status:newStatus}).eq("id",id);
+        if(error) throw error;
+        await loadAllGames();
+    }catch(e){alert("操作失败"+e.message);}
+}
+window.deleteGame = async function(id){
+    if(!confirm("确认彻底删除这条游戏，不可恢复！")) return;
+    try{
+        const {error}=await client.from("demos").delete().eq("id",id);
+        if(error) throw error;
+        await loadAllGames();
+    }catch(e){alert("删除失败"+e.message);}
+}
+
+async function loadAllReviews(){
+    const box = document.getElementById("reviewListBox");
+    box.innerHTML="加载评论...";
+    try{
+        const {data:gameList,error:gErr}=await client.from("demos").select("id,name");
+        if(gErr) throw gErr;
+        const gameMap = {};
+        gameList.forEach(item=>{
+            gameMap[item.id] = item.name;
+        });
+        const {data,error}=await client.from("comments").select("*").order("created_at",{ascending:false});
+        if(error) throw error;
+        let html = "";
+        data.forEach(r=>{
+            const gameName = gameMap[r.demo_id] || "未知游戏";
+            html += `
+            <div class="row-item">
+                <div>【${escapeHtml(gameName)}】昵称：${escapeHtml(r.nickname||"匿名")}｜星级${r.star}｜${new Date(r.created_at).toLocaleString()}</div>
+                <div>建议：${escapeHtml(r.content||"")}</div>
+                <button class="btn-red" onclick="delReview('${r.id}')">删除这条评论</button>
+            </div>
+            `
+        })
+        box.innerHTML = html||"<p>暂无评论</p>";
+    }catch(err){
+        box.innerHTML="读取评论失败："+err.message;
+    }
+}
+window.delReview = async function(rid){
+    if(!confirm("确认删除该评论？")) return;
+    try{
+        const {error}=await client.from("comments").delete().eq("id",rid);
+        if(error) throw error;
+        await loadAllReviews();
+    }catch(e){alert("删除评论失败"+e.message);}
+}
+
+async function loadFeedbacks(){
+    const box = document.getElementById("feedbackListBox");
+    box.innerHTML="加载反馈...";
+    try{
+        const {data,error}=await client.from("feedbacks").select("*").order("created_at",{ascending:false});
+        if(error) throw error;
+        let html="";
+        if(!data||data.length===0){
+            html="<p>暂无用户反馈</p>";
+        }else{
+            data.forEach(fb=>{
+                html += `
+                <div class="feedback-card">
+                    <div><b>提交时间：${new Date(fb.created_at).toLocaleString()}</b></div>
+                    <div>联系方式：${escapeHtml(fb.contact||"未填写")}</div>
+                    <div style="margin:6px 0;">反馈内容：${escapeHtml(fb.content)}</div>
+                    <button class="btn-red" onclick="delFeedback('${fb.id}')">删除此反馈</button>
+                </div>
+                `;
+            })
+        }
+        box.innerHTML = html;
+    }catch(err){
+        box.innerHTML="读取反馈失败："+err.message;
+    }
+}
+window.delFeedback = async function(fid){
+    if(!confirm("确认删除这条用户反馈？")) return;
+    try{
+        const {error}=await client.from("feedbacks").delete().eq("id",fid);
+        if(error) throw error;
+        await loadFeedbacks();
+    }catch(e){
+        alert("删除反馈失败："+e.message);
+    }
+}
+
+function escapeHtml(str) {
+    if (!str) return "";
+    return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
+}
+</script>
+</body>
+</html>

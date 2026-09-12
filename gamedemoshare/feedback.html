@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>用户反馈 - GameDemoShare</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: system-ui, sans-serif;
+        }
+        body {
+            background:#19192b;
+            color:#eeeeee;
+            max-width:720px;
+            margin: 24px auto;
+            padding:16px;
+        }
+        nav {
+            display:flex;
+            gap:24px;
+            margin-bottom:24px;
+            padding-bottom:10px;
+            border-bottom:1px solid #333550;
+        }
+        nav a {
+            color:#aaa;
+            text-decoration:none;
+        }
+        nav a.active{
+            color:#48a8ff;
+            font-weight:bold;
+        }
+        h1{
+            font-size:24px;
+            margin-bottom:12px;
+        }
+        .tip{
+            font-size:13px;
+            color:#bbbbdd;
+            margin-bottom:20px;
+        }
+        label{
+            display:block;
+            margin-top:12px;
+        }
+        input,textarea{
+            width:100%;
+            background:#222238;
+            border:1px solid #444470;
+            color:#fff;
+            padding:10px;
+            border-radius:6px;
+            font-size:15px;
+            margin:6px 0;
+        }
+        textarea{
+            min-height:180px;
+            resize:vertical;
+        }
+        button{
+            margin-top:16px;
+            padding:10px 16px;
+            border:none;
+            border-radius:6px;
+            cursor:pointer;
+            font-size:15px;
+            background:#247bdd;
+            color:white;
+        }
+        button:disabled{
+            opacity:0.45;
+            cursor:not-allowed;
+        }
+        footer {
+            margin-top:40px;
+            padding-top:16px;
+            border-top:1px solid #333;
+            color:#888;
+            font-size:14px;
+        }
+    </style>
+</head>
+<body>
+    <nav>
+        <a href="index.html">首页</a>
+        <a href="submit.html">发布</a>
+        <a href="ranking.html">排行榜</a>
+        <a href="feedback.html" class="active">反馈</a>
+    </nav>
+    <h1>提交用户反馈</h1>
+    <div class="tip">遇到bug、建议、问题都可以在这里提交，站长会在后台查看。联系方式选填。</div>
+
+    <label>你的联系方式（选填，方便回复你）</label>
+    <input id="inputContact" placeholder="QQ / 邮箱 / 微信">
+
+    <label>反馈内容（必填）</label>
+    <textarea id="inputContent" placeholder="请详细描述你的问题或者建议..."></textarea>
+
+    <button id="btnSubmitFeedback">提交反馈</button>
+
+    <footer>
+        <div>© 2026 GameDemoShare</div>
+    </footer>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+const SUPABASEURL = "https://kczxtbmgigbfofdzkynm.supabase.co";
+const SUPABASEANONKEY = "sb_publishable_jiyD19NDY1DEc7jVFOQzaw_I-85Ncte";
+const { createClient } = window.supabase;
+
+// 改用var，就算意外重复声明也不会直接报错崩溃
+var supabase = createClient(SUPABASEURL, SUPABASEANONKEY);
+
+const btn = document.querySelector("#btnSubmitFeedback");
+btn.onclick = async function(){
+    const contact = document.querySelector("#inputContact").value.trim();
+    const content = document.querySelector("#inputContent").value.trim();
+    if(!content){
+        alert("反馈内容不能为空！");
+        return;
+    }
+    btn.disabled = true;
+    btn.innerText = "提交中...";
+    try{
+        const {error} = await supabase.from("feedbacks").insert([{
+            contact: contact,
+            content: content
+        }]);
+        if(error){
+            alert("提交失败："+error.message);
+            btn.disabled = false;
+            btn.innerText = "提交反馈";
+            return;
+        }
+        alert("✅反馈已提交，感谢你的反馈！");
+        document.querySelector("#inputContact").value = "";
+        document.querySelector("#inputContent").value = "";
+    }catch(err){
+        alert("异常："+err.message);
+    }finally{
+        btn.disabled = false;
+        btn.innerText = "提交反馈";
+    }
+}
+</script>
+
+</body>
+</html>
