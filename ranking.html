@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>排行榜</title>
+    <style>
+        .tab-header { display: flex; margin-bottom: 20px; border-bottom: 1px solid #333550; }
+        .tab-btn { background: transparent; color: #aaa; border: none; padding: 10px 20px; font-size: 16px; cursor: pointer; transition: all 0.3s; }
+        .tab-btn:hover { color: #eee; }
+        .tab-btn.active { color: #48a8ff; border-bottom: 2px solid #48a8ff; font-weight: bold; }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: system-ui, sans-serif; }
+        body { background:#19192b; color:#eeeeee; max-width:900px; margin: 24px auto; padding:16px; }
+        nav { display:flex; gap:24px; margin-bottom:24px; padding-bottom:10px; border-bottom:1px solid #333550; }
+        nav a { color:#aaa; text-decoration:none; }
+        nav a.active { color:#48a8ff; font-weight:bold; }
+        h1 { font-size:24px; margin-bottom:12px; }
+        h2 { font-size:20px; margin:24px 0 8px; }
+        .tip { font-size:13px; color:#bbbbdd; margin-bottom:20px; }
+        .rank-item { background:#222238; border:1px solid #444470; border-radius:8px; padding:14px; margin-bottom:10px; }
+        .pay-tag { display:inline-block; background:#cc8800; color:#000; padding:2px 6px; border-radius:4px; font-size:12px; margin-left:8px; }
+        .tag-wrap { margin:6px 0; }
+        .tag { display:inline-block; background:#38384f; padding:2px 8px; border-radius:4px; font-size:12px; margin-right:4px; margin-bottom:4px; }
+        .rank-desc { color:#ccc; font-size:14px; margin-bottom:6px; }
+        .rank-meta { font-size:13px; color:#888; }
+        .loading { text-align:center; padding:30px; color:#aaa; }
+        footer { margin-top:40px; padding-top:16px; border-top:1px solid #333; color:#888; font-size:14px; }
+    </style>
+</head>
+<body>
+    <nav>
+        <a href="index.html">首页</a>
+        <a href="submit.html">发布</a>
+        <a href="ranking.html" class="active">排行榜</a>
+    </nav>
+
+    <div class="tab-header">
+        <button id="tab-score" class="tab-btn active" onclick="switchTab('score')">玩家严选</button>
+        <button id="tab-sponsor" class="tab-btn" onclick="switchTab('sponsor')">探照灯计划</button>
+    </div>
+
+    <div id="section-score" class="tab-section">
+        <div class="tip">所有上架游戏，评价数≥3方可上榜；付费标记仅展示，不干扰评分排序</div>
+        <div id="scoreRankBox" class="loading">加载中...</div>
+    </div>
+
+    <div id="section-sponsor" class="tab-section" style="display: none;">
+        <div class="tip">已启用付费曝光、并且未到期项目，按发布时间倒序展示；到期自动移出榜单</div>
+        <div id="sponsorRankBox" class="loading">加载中...</div>
+    </div>
+
+    <footer>
+        © 2026 GameDemoShare
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script>
+        function switchTab(type) {
+            document.getElementById('section-score').style.display = 'none';
+            document.getElementById('section-sponsor').style.display = 'none';
+            document.getElementById('tab-score').classList.remove('active');
+            document.getElementById('tab-sponsor').classList.remove('active');
+
+            if (type === 'score') {
+                document.getElementById('section-score').style.display = 'block';
+                document.getElementById('tab-score').classList.add('active');
+            } else if (type === 'sponsor') {
+                document.getElementById('section-sponsor').style.display = 'block';
+                document.getElementById('tab-sponsor').classList.add('active');
+            }
+        }
+
+        const SUPABASEURL = "https://kczxtbmgigbfofdzkynm.supabase.co";
+        const SUPABASEANONKEY = "sb_publishable_jiyD19NDY1DEc7jVFOQzaw_I-85Ncte";
+        const { createClient } = window.supabase;
+        const supabaseClient = createClient(SUPABASEURL, SUPABASEANONKEY);
+
+        function escapeHtml(str) {
+            if (!str) return "";
+            return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
+        }
+
+        async function loadScoreRank(){
+            const box = document.querySelector("#scoreRankBox");
+            box.innerText="加载中...";
+            try{
+                const {data: demos, error: demoError} = await supabaseClient
+                    .from("demos")
+                    .select("id,name,tags,description,sponsored,promote_amount")
+                    .eq("status","active");
+                if(demoError) throw demoError;
+
+                const {data: comments, error: comError} = await supabaseClient
+                    .from("comments")
+                    .select("demo_id, star");
+                if(comError) throw comError;
+
+                const statsMap = {};
+                comments.forEach(c => {
+                    if(c.star >= 1 && c.star <= 5){
+                        if(!statsMap[c.demo_id]){
+                            statsMap[c.demo_id] = { sum: 0, count: 0 };
+                        }
+                        statsMap[c.demo_id].sum += Number(c.star);
+                        statsMap[c.demo_id].count++;
+                    }
+                });
+
+                const listWithStat = [];
+                for(const g of demos){
+                    const stat = statsMap[g.id] || { sum: 0, count: 0 };
+                    if(stat.count >= 3){
+                        const avg = Number((stat.sum / stat.count).toFixed(2));
+                        listWithStat.push({...g, avgScore: avg, reviewCount: stat.count});
+                    }
+                }
+                
+                listWithStat.sort((a,b)=> b.avgScore - a.avgScore);
+
+                if(listWithStat.length === 0){
+                    box.innerHTML = "<p>暂无数据</p>";
+                    return;
+                }
+
+                let html = "";
+                listWithStat.forEach(g=>{
+                    let tagHtml = "";
+                    if(g.tags){
+                        g.tags.split(",").forEach(t=>{
+                            const tg = t.trim();
+                            if(tg) tagHtml += `<span class="tag">${escapeHtml(tg)}</span>`;
+                        })
+                    }
+                    let payTag = "";
+                    if(g.sponsored && g.promote_amount){
+                        payTag = `<span class="pay-tag">【已付费 ¥${escapeHtml(String(g.promote_amount))}】</span>`;
+                    }
+                    html += `
+                    <div class="rank-item">
+                        <h3>${escapeHtml(g.name)}${payTag}</h3>
+                        <div class="tag-wrap">${tagHtml}</div>
+                        <div class="rank-desc">${escapeHtml(g.description||"暂无简介")}</div>
+                        <div class="rank-meta">⭐平均分：${g.avgScore}｜评价数：${g.reviewCount}</div>
+                    </div>
+                    `
+                })
+                box.innerHTML = html;
+            }catch(err){
+                console.error("加载真实评分榜失败:", err);
+                box.innerHTML = "<p>暂无数据</p>";
+            }
+        }
+
+        async function loadSponsorRank(){
+            const box = document.querySelector("#sponsorRankBox");
+            box.innerText="加载中...";
+            const nowTs = Date.now();
+            try{
+                const {data,error}=await supabaseClient
+                    .from("demos")
+                    .select("id,name,tags,description,created_at,promote_amount,promote_expire")
+                    .eq("status","active")
+                    .eq("sponsored",true)
+                    .order("created_at",{ascending:false});
+                if(error) throw error;
+
+                const validList = [];
+                for(const item of data){
+                    if(!item.promote_expire) continue;
+                    const expTs = new Date(item.promote_expire).getTime();
+                    if(expTs > nowTs){
+                        validList.push(item);
+                    }
+                }
+                if(validList.length === 0){
+                    box.innerHTML = "<p>暂无数据</p>";
+                    return;
+                }
+                let html = "";
+                validList.forEach(g=>{
+                    let tagHtml = "";
+                    if(g.tags){
+                        g.tags.split(",").forEach(t=>{
+                            const tg = t.trim();
+                            if(tg) tagHtml += `<span class="tag">${escapeHtml(tg)}</span>`;
+                        })
+                    }
+                    let payTag = "";
+                    if(g.promote_amount){
+                        payTag = `<span class="pay-tag">【已付费 ¥${escapeHtml(String(g.promote_amount))}】</span>`;
+                    }
+                    html += `
+                    <div class="rank-item">
+                        <h3>${escapeHtml(g.name)}${payTag}</h3>
+                        <div class="tag-wrap">${tagHtml}</div>
+                        <div class="rank-desc">${escapeHtml(g.description||"暂无简介")}</div>
+                    </div>
+                    `
+                })
+                box.innerHTML = html;
+            }catch(err){
+                console.error("加载付费曝光榜失败:", err);
+                box.innerHTML = "<p>暂无数据</p>";
+            }
+        }
+
+        loadScoreRank();
+        loadSponsorRank();
+    </script>
+</body>
+</html>

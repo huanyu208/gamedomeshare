@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GameDemoShare</title>
+    <style>
+        * { box-sizing: border-box; margin:0; padding:0; font-family: system-ui, sans-serif; }
+        body { background:#1a1a22; color:#eee; max-width:800px; margin:0 auto; padding:16px; min-height:100vh; display:flex; flex-direction:column; }
+        main{ flex-grow:1; }
+        .intro-block{ background:#232334; padding:18px 16px; border-radius:8px; margin-bottom:16px; }
+        .intro-block h2{ margin-bottom:8px; font-size:20px; }
+        .intro-block p{ color:#ccccdd; line-height:1.6; font-size:15px; }
+        .announce{ background:#2b2b42; padding:10px 14px; border-radius:6px; margin-bottom:16px; color:#e4e4ff; }
+        nav { display:flex; gap:24px; padding:12px 0; margin-bottom:16px; border-bottom:1px solid #333; }
+        nav a { color:#aaa; text-decoration:none; font-size:16px; }
+        nav a.active { color:#42a5f5; font-weight:bold; }
+        nav a:hover { color:#71b8ff; }
+        .demo-card{ background:#272735; border-radius:8px; padding:16px; margin-bottom:14px; cursor:pointer; }
+        .demo-card:hover{ background:#2c2c42; }
+        .demo-card h3{ margin-bottom:6px; }
+        .hot-tag{ display:inline-block; background:#ff4466; color:#fff; padding:2px 6px; font-size:12px; border-radius:4px; margin-left:8px; }
+        .dev-stage-tag{ display:inline-block; background:#353555; color:#cce0ff; font-size:12px; padding:2px 6px; border-radius:4px; margin-left:8px; }
+        .dev-log-bar{ background:#4a4020; color:#ffe888; padding:8px 10px; border-radius:4px; margin:10px 0; }
+        .btn-random{ padding:4px 10px; background:#304080; color:#fff; border:none; border-radius:4px; cursor:pointer; }
+        .tag-wrap{ margin:8px 0; }
+        .tag{ display:inline-block; background:#38384f; padding:2px 8px; border-radius:4px; font-size:13px; margin-right:4px; margin-bottom:4px; }
+        .desc-text{ color:#ccc; font-size:14px; margin-bottom:10px; line-height:1.5; }
+        .meta-row{ font-size:13px; color:#888; margin-top:8px; }
+        .link-row a{ color:#61b4ff; word-break:break-all; font-size:14px; }
+        footer { margin-top:40px; padding-top:16px; border-top:1px solid #333; color:#888; font-size:14px; }
+        .loading{ text-align:center; padding:40px; color:#aaa; }
+        .modal-overlay{ position:fixed; inset:0; background:rgba(0,0,0,0.8); z-index:999; display:flex; align-items:center; justify-content:center; padding:12px; }
+        .modal-box{ width:100%; max-width:620px; max-height:90vh; overflow-y:auto; background:#272735; border-radius:8px; padding:20px; }
+        .hide{ display:none !important; }
+        .comment-item{ padding:10px 0; border-bottom:1px solid #3a3a52; }
+        input,textarea,select{ width:100%; padding:10px; background:#1f1f2f; border:1px solid #444; color:#fff; border-radius:6px; margin:6px 0; }
+        button{ padding:8px 14px; background:#217ad9; color:#fff; border:none; border-radius:6px; cursor:pointer; }
+        button:disabled{ opacity:0.45; cursor:not-allowed; }
+        .close-btn{ background:#444; margin-bottom:12px; }
+        .edit-hint{ color:#82c9ff; font-size:13px; margin:6px 0; }
+        #commentListWrap { max-height: 350px; overflow-y: auto; padding-right: 5px; }
+        #listWrap { max-height: 500px; overflow-y: auto; }
+        #inputCommentContent { max-height: 150px; overflow-y: auto; resize: vertical; }
+        #commentListWrap::-webkit-scrollbar, #listWrap::-webkit-scrollbar, textarea::-webkit-scrollbar { width: 6px; }
+        #commentListWrap::-webkit-scrollbar-thumb, #listWrap::-webkit-scrollbar-thumb, textarea::-webkit-scrollbar-thumb { background-color:#444470; border-radius:3px; }
+        #commentListWrap::-webkit-scrollbar-track, #listWrap::-webkit-scrollbar-track, textarea::-webkit-scrollbar-track { background:#272735; }
+    </style>
+</head>
+<body>
+    <nav>
+        <a href="index.html" class="active">首页</a>
+        <a href="submit.html">发布</a>
+        <a href="ranking.html">排行榜</a>
+    </nav>
+    <div class="intro-block">
+        <h2>关于 GameDemoShare</h2>
+        <p id="siteIntroBox">这是一个独立游戏原型分享平台。开发者可以提交自己的Demo外部链接，供其他人浏览体验。本网站不存储游戏文件，仅保存项目介绍与跳转链接。</p>
+    </div>
+    <div class="announce">
+        📢公告：<span id="siteNoticeBox">欢迎提交你的游戏Demo，提交后可以使用管理ID修改游戏信息。</span>
+    </div>
+    <main>
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:10px;">
+            <h2>最新榜</h2>
+            <button id="randomGameBtn" class="btn-random">🎲 随机试玩</button>
+        </div>
+        <div id="statInfo" style="margin-bottom:12px;color:#ccc;line-height:1.6;"></div>
+        <div id="listWrap" class="loading">加载中…</div>
+    </main>
+    <div id="gameModal" class="modal-overlay hide">
+        <div class="modal-box">
+            <button class="close-btn" id="modalCloseBtn">关闭</button>
+            <h3 id="modalTitle"></h3>
+            <div class="meta-row" id="modalMeta"></div>
+            <div class="tag-wrap" id="modalTags"></div>
+            <div class="desc-text" id="modalDesc"></div>
+            <div class="link-row" id="modalLink"></div>
+            <div id="devLogContainer"></div>
+            <hr style="margin:16px 0;border-color:#444;">
+            <h4>玩家评价</h4>
+            <div id="commentListWrap"></div>
+            <hr style="margin:16px 0;border-color:#444;">
+            <div id="commentFormArea"></div>
+        </div>
+    </div>
+    <footer style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
+        <div>© 2026 GameDemoShare。仅存储外部链接，不上传游戏本体文件。</div>
+        <div><a href="feedback.html" style="color:#42a5f5; text-decoration:none; font-weight:bold;">📮 反馈</a></div>
+    </footer>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script>
+        const SUPABASE_URL = "https://kczxtbmgigbfofdzkynm.supabase.co";
+        const SUPABASE_ANON_KEY = "sb_publishable_jiyD19NDY1DEc7jVFOQzaw_I-85Ncte";
+        const { createClient } = window.supabase;
+        let loadedDemoList = [];
+
+        function getMyReviews(){ const raw = localStorage.getItem("my_reviews"); if(!raw) return []; try{ return JSON.parse(raw); }catch{ return []; } }
+        function saveMyReviews(arr){ localStorage.setItem("my_reviews", JSON.stringify(arr)); }
+        function findMyReview(demoId){ return getMyReviews().find(r=>r.demo_id === demoId); }
+        function upsertMyReview(demoId, commentId){
+            let arr = getMyReviews();
+            const idx = arr.findIndex(x => x.demo_id === demoId);
+            if(idx >= 0){ arr[idx].comment_id = commentId; }else{ arr.push({ demo_id: demoId, comment_id: commentId }); }
+            saveMyReviews(arr);
+        }
+
+        function setCookie(name,value,days) {
+            let expires = "";
+            if (days) { const date = new Date(); date.setTime(date.getTime() + (days*24*60*60*1000)); expires = "; expires=" + date.toUTCString(); }
+            document.cookie = name + "=" + (value || "") + expires + "; path=/";
+        }
+        function getCookie(name) {
+            let nameEQ = name + "="; let ca = document.cookie.split(';');
+            for(let i=0;i < ca.length;i++) { let c = ca[i]; while (c.charAt(0)===' ') c = c.substring(1,c.length); if (c.indexOf(nameEQ) === 0) return c.substring(nameEQ.length,c.length); }
+            return null;
+        }
+        function getClientFingerprint(){
+            let fp = getCookie("client_fp");
+            if(!fp){ fp = crypto.randomUUID(); setCookie("client_fp", fp, 365); }
+            return fp;
+        }
+        const clientFp = getClientFingerprint();
+        const client = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        const listWrap = document.getElementById("listWrap");
+        const gameModal = document.getElementById("gameModal");
+        const modalCloseBtn = document.getElementById("modalCloseBtn");
+        const commentFormArea = document.getElementById("commentFormArea");
+        let currentViewDemoId = null;
+        let myReviewRecord = null;
+
+        document.querySelector("#randomGameBtn").onclick = function(){
+            if(!loadedDemoList || loadedDemoList.length===0){ alert("暂无可试玩游戏"); return; }
+            const randIdx = Math.floor(Math.random()*loadedDemoList.length);
+            const target = loadedDemoList[randIdx];
+            openGameModal(target.id);
+        };
+
+        modalCloseBtn.onclick = ()=>{ gameModal.classList.add("hide"); currentViewDemoId = null; myReviewRecord = null; }
+
+        async function loadSiteSettings(){
+            try{
+                const {data, error} = await client.from("settings").select("*").eq("id", 1).maybeSingle();
+                if(error || !data) return;
+                if(data.notice){ document.getElementById("siteNoticeBox").innerText = data.notice; }
+                if(data.intro){ document.getElementById("siteIntroBox").innerText = data.intro; }
+            }catch(err){ console.warn("读取首页设置失败：", err); }
+        }
+
+        async function loadSiteStats(){
+            const {count:gameCount} = await client.from("demos").select("*",{count:'exact',head:true}).eq("status","active");
+            const {count:reviewCount} = await client.from("comments").select("*",{count:'exact',head:true});
+
+            // 【修复】使用本地时间计算今日开始，避免时区导致的凌晨8点数据重置
+            const today = new Date();
+            today.setHours(0,0,0,0);
+            const isoDayStart = today.toISOString();
+
+            const {count:todayGame} = await client.from("demos").select("*",{count:'exact',head:true}).eq("status","active").gte("created_at",isoDayStart);
+            const {count:todayReview} = await client.from("comments").select("*",{count:'exact',head:true}).gte("created_at",isoDayStart);
+
+            document.getElementById("statInfo").innerText =
+`📈 已收录 ${gameCount} 款游戏 | ⭐ 累计 ${reviewCount} 条真实评价
+🔥 今日新增 ${todayGame} 款游戏 | 🎉 今日新增 ${todayReview} 条评价`;
+        }
+
+        async function getDemoStarInfo(demoId){
+            const {data,error} = await client.from("comments").select("star").eq("demo_id",demoId);
+            if(error||!data||data.length===0){ return {avg:null,count:0}; }
+            const sum = data.reduce((s,i)=>s+i.star,0);
+            const avg = (sum / data.length).toFixed(1);
+            return {avg, count:data.length};
+        }
+
+        async function loadDemos(){
+            listWrap.innerText = "加载中…";
+            const nowTs = Date.now();
+            try{
+                const {data,error} = await client.from("demos")
+                    .select("id,name,tags,description,external_url,version,created_at,sponsored,promote_expire,promote_amount,dev_stage,dev_log,view_count")
+                    .eq("status","active")
+                    .order("created_at",{ascending:false});
+                if(error){ listWrap.innerText = "加载失败："+error.message; return; }
+                if(!data || data.length===0){ listWrap.innerText = "暂无已上架的游戏Demo"; return; }
+                loadedDemoList = [...data];
+                await loadSiteStats();
+                listWrap.innerHTML = "";
+                for(const item of data){
+                    const starInfo = await getDemoStarInfo(item.id);
+                    const card = document.createElement("div");
+                    card.className = "demo-card";
+                    card.dataset.demoid = item.id;
+
+                    let tagHtml = "";
+                    if(item.tags){ item.tags.split(",").forEach(t=>{ const tg = t.trim(); if(tg) tagHtml += `<span class="tag">${escapeHtml(tg)}</span>`; }) }
+                    let verStr = item.version ? ` <span style="color:#999">${escapeHtml(item.version)}</span>` : "";
+                    let devStageTag = `<span class="dev-stage-tag">💡${escapeHtml(item.dev_stage||"概念原型")}</span>`;
+                    let hotTag = "";
+                    let isEffectiveSponsor = false;
+                    if(item.sponsored && item.promote_expire){
+                        const expTs = new Date(item.promote_expire).getTime();
+                        if(expTs > nowTs){ isEffectiveSponsor = true; }
+                    }
+                    if(isEffectiveSponsor){ hotTag = `<span class="hot-tag">🔥 已推广</span>`; }
+                    let linkStr = item.external_url ? `<div class="link-row"><a target="_blank" href="${escapeHtml(item.external_url)}">前往项目链接</a></div>` : "";
+                    let timeStr = "";
+                    if(item.created_at){ const d = new Date(item.created_at); if(!isNaN(d.getTime())){ timeStr = `<div class="meta-row">发布时间：${d.toLocaleDateString()}</div>`; } }
+                    let viewText = `<div style="margin-top:6px;color:#aaa;font-size:13px;">👀 ${item.view_count??0} 次围观</div>`;
+                    let starText = "⭐暂无评价";
+                    if(starInfo.count>0){ starText = `⭐${starInfo.avg} (${starInfo.count}条评价)`; }
+                    card.innerHTML = `
+                        <h3>${escapeHtml(item.name)}${verStr}${devStageTag}${hotTag}</h3>
+                        <div class="tag-wrap">${tagHtml}</div>
+                        <div class="desc-text">${escapeHtml(item.description)}</div>
+                        <div style="color:#ffd700;font-size:14px;margin:4px 0;">${starText}</div>
+                        ${linkStr}
+                        ${timeStr}
+                        ${viewText}
+                    `;
+                    card.onclick = ()=> openGameModal(item.id);
+                    listWrap.appendChild(card);
+                }
+            }catch(err){ listWrap.innerText = "异常："+err.message; }
+        }
+
+        async function openGameModal(demoId){
+            currentViewDemoId = demoId;
+            myReviewRecord = findMyReview(demoId);
+            try{ await client.rpc('increment_view', {demo_id_input: demoId}); }catch(e){ console.warn("浏览量更新失败",e); }
+            const {data:demo,error} = await client.from("demos").select("*").eq("id",demoId).single();
+            if(error) return;
+
+            document.getElementById("modalTitle").innerText = demo.name + (demo.version?" "+demo.version:"");
+            document.getElementById("modalMeta").innerText = new Date(demo.created_at).toLocaleDateString();
+            let tagHtml="";
+            if(demo.tags){ demo.tags.split(",").forEach(t=>{ const tg = t.trim(); if(tg) tagHtml += `<span class="tag">${escapeHtml(tg)}</span>`; }) }
+            document.getElementById("modalTags").innerHTML = tagHtml;
+            document.getElementById("modalDesc").innerText = demo.description||"";
+            document.getElementById("modalLink").innerHTML = demo.external_url ? `<a target="_blank" href="${escapeHtml(demo.external_url)}">访问项目链接</a>`:"";
+
+            const devLogContainer = document.getElementById("devLogContainer");
+            devLogContainer.innerHTML = "";
+            if(demo.dev_log && demo.dev_log.trim()!==''){
+                devLogContainer.innerHTML = `<div class="dev-log-bar">📢 开发者动态：${escapeHtml(demo.dev_log)}</div>`;
+            }
+
+            await loadComments(demoId);
+            await renderCommentForm();
+            gameModal.classList.remove("hide");
+        }
+
+        async function renderCommentForm(){
+            if(!myReviewRecord){
+                commentFormArea.innerHTML = `
+                    <h4>发表你的评价</h4>
+                    <div class="edit-hint">每个游戏仅可评价一次，但你可以随时回来修改你的评价。</div>
+                    <label>昵称</label>
+                    <input type="text" id="inputNick" maxlength="20" placeholder="填写你的昵称">
+                    <label>星级(1‑5)</label>
+                    <select id="inputStar">
+                        <option value="5">⭐⭐⭐⭐⭐ 5星</option>
+                        <option value="4">⭐⭐⭐⭐ 4星</option>
+                        <option value="3">⭐⭐⭐ 3星</option>
+                        <option value="2">⭐⭐ 2星</option>
+                        <option value="1">⭐ 1星</option>
+                    </select>
+                    <label>评价内容</label>
+                    <textarea id="inputCommentContent" maxlength="600" placeholder="写下你的感受"></textarea>
+                    <button id="submitNew">提交评价</button>
+                `;
+                document.getElementById("submitNew").onclick = submitNewComment;
+            }else{
+                const {data:oldCmt} = await client.from("comments").select("nickname,star,content").eq("id",myReviewRecord.comment_id).single();
+                commentFormArea.innerHTML = `
+                    <h4>修改你的评价</h4>
+                    <div class="edit-hint">每个游戏仅可评价一次，但你可以随时回来修改你的评价。</div>
+                    <label>昵称</label>
+                    <input type="text" id="inputNick" maxlength="20" placeholder="填写你的昵称" value="${escapeHtml(oldCmt?.nickname||'')}">
+                    <label>星级(1‑5)</label>
+                    <select id="inputStar">
+                        <option value="5">⭐⭐⭐⭐⭐ 5星</option>
+                        <option value="4">⭐⭐⭐⭐ 4星</option>
+                        <option value="3">⭐⭐⭐ 3星</option>
+                        <option value="2">⭐⭐ 2星</option>
+                        <option value="1">⭐ 1星</option>
+                    </select>
+                    <label>评价内容</label>
+                    <textarea id="inputCommentContent" maxlength="600" placeholder="写下你的感受">${escapeHtml(oldCmt?.content||'')}</textarea>
+                    <button id="updateMy">更新我的评价</button>
+                `;
+                document.getElementById("inputStar").value = oldCmt?.star || 5;
+                document.getElementById("updateMy").onclick = updateMyComment;
+            }
+        }
+
+        async function submitNewComment(){
+            if(!currentViewDemoId){ alert("无法获取当前游戏信息，请刷新重试"); return; }
+            const nick = document.getElementById("inputNick").value.trim();
+            const star = Number(document.getElementById("inputStar").value);
+            const content = document.getElementById("inputCommentContent").value.trim();
+            const btn = document.querySelector("#submitNew");
+            if(!nick){ alert("请填写昵称"); return; }
+            if(isNaN(star)||star<1||star>5){ alert("星级必须1‑5"); return; }
+            btn.disabled = true; btn.innerText = "提交中...";
+            try{
+                const {data,error} = await client.from("comments")
+                    .upsert({ demo_id: currentViewDemoId, nickname:nick, star:star, content:content, client_fp: clientFp },{ onConflict:"demo_id,client_fp" }).select();
+                if(error){ alert("操作失败："+error.message); btn.disabled = false; btn.innerText = "提交评价"; return; }
+                const rec = data[0];
+                upsertMyReview(currentViewDemoId, rec.id);
+                myReviewRecord = findMyReview(currentViewDemoId);
+                await loadComments(currentViewDemoId);
+                await loadDemos();
+                await renderCommentForm();
+                alert("✅评价已保存");
+            }catch(e){ alert("异常："+(e.message||"未知错误")); btn.disabled = false; btn.innerText = "提交评价"; }
+        }
+
+        async function updateMyComment(){
+            if(!currentViewDemoId || !myReviewRecord){ alert("无法获取当前游戏信息，请刷新重试"); return; }
+            const nick = document.getElementById("inputNick").value.trim();
+            const star = Number(document.getElementById("inputStar").value);
+            const content = document.getElementById("inputCommentContent").value.trim();
+            const btn = document.querySelector("#updateMy");
+            if(!nick){ alert("请填写昵称"); return; }
+            if(isNaN(star)||star<1||star>5){ alert("星级必须1‑5"); return; }
+            btn.disabled = true; btn.innerText = "更新中...";
+            const {error} = await client.from("comments").update({ nickname:nick, star:star, content:content }).eq("id", myReviewRecord.comment_id);
+            if(error){ alert("更新评价失败："+error.message); btn.disabled = false; btn.innerText = "更新我的评价"; return; }
+            await loadComments(currentViewDemoId);
+            await loadDemos();
+            await renderCommentForm();
+            alert("✅评价已更新");
+        }
+
+        async function loadComments(demoId){
+            const wrap = document.getElementById("commentListWrap");
+            // 【修复】将 asc:false 修正为标准 API 的 ascending:false
+            const {data,error}=await client.from("comments").select("nickname,star,content,created_at").eq("demo_id",demoId).order("created_at",{ascending:false});
+            if(error||!data||data.length===0){ wrap.innerHTML = "<div style='color:#aaa;'>暂无评价</div>"; return; }
+            let html = "";
+            data.forEach(c=>{
+                html += `<div class="comment-item">
+                    <div><b>${escapeHtml(c.nickname)}</b> · ⭐${c.star}分 · ${new Date(c.created_at).toLocaleString()}</div>
+                    <div style="margin-top:4px;color:#ccc;">${escapeHtml(c.content||"")}</div>
+                </div>`;
+            })
+            wrap.innerHTML = html;
+        }
+
+        function escapeHtml(s){
+            if(!s) return "";
+            return s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
+        }
+
+        loadSiteSettings();
+        loadDemos();
+    </script>
+</body>
+</html>
