@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
@@ -53,7 +52,7 @@
             display:block;
             margin-bottom:4px;
         }
-        textarea,input{
+        textarea,input,select{
             width:100%;
             padding:10px;
             background:#272735;
@@ -80,14 +79,6 @@
             padding:12px;
             border-bottom:1px solid #333;
         }
-        .row-item.apply-promote{
-            border:1px solid #ffb300;
-            background:#2b261a;
-        }
-        .inline-input{
-            width:320px;
-            display:inline-block;
-        }
         .header-bar{
             display:flex;
             justify-content:space-between;
@@ -100,10 +91,34 @@
             border-radius:6px;
             margin-bottom:10px;
         }
-        .small-note{
-            font-size:12px;
-            color:#aaa;
-            margin-top:4px;
+        .stat-card-wrap{
+            display:grid;
+            grid-template-columns: repeat(auto-fill,minmax(180px,1fr));
+            gap:12px;
+            margin-bottom:24px;
+        }
+        .stat-card{
+            background:#272735;
+            padding:14px;
+            border-radius:8px;
+            text-align:center;
+        }
+        .stat-num{
+            font-size:26px;
+            font-weight:bold;
+            color:#60a5fa;
+        }
+        .rank-block{
+            margin-bottom:24px;
+        }
+        .rank-block h4{
+            margin-bottom:8px;
+            font-size:16px;
+        }
+        .rank-item{
+            padding:6px 0;
+            border-bottom:1px solid #333;
+            font-size:14px;
         }
     </style>
 </head>
@@ -112,7 +127,7 @@
         <h2>站长后台登录（Supabase账号）</h2>
         <div class="form-item">
             <label>管理员邮箱</label>
-            <input type="email" id="adminEmail" placeholder="zhoulou_1219qqcom@qq.com">
+            <input type="email" id="adminEmail" placeholder="admin@gamedemoshare.com">
         </div>
         <div class="form-item">
             <label>密码</label>
@@ -127,25 +142,69 @@
             <button class="btn-red" id="logoutBtn">退出登录</button>
         </div>
         <div class="tab-wrap">
-            <button class="tab-btn active" data-tab="tab-setting">网站设置</button>
+            <button class="tab-btn active" data-tab="tab-dashboard">📊 数据看板</button>
+            <button class="tab-btn" data-tab="tab-setting">网站设置</button>
             <button class="tab-btn" data-tab="tab-game">游戏管理</button>
             <button class="tab-btn" data-tab="tab-review">评论管理</button>
             <button class="tab-btn" data-tab="tab-feedback">站长信箱</button>
+            <button class="tab-btn" data-tab="tab-user">用户管理</button>
+            <button class="tab-btn" data-tab="tab-achievement">🏆 荣誉配置</button>
+            <button class="tab-btn" data-tab="tab-bounty">💰 悬赏管理</button>
         </div>
-        <div class="tab-panel show" id="tab-setting">
+        <div class="tab-panel show" id="tab-dashboard">
+            <h3>总览统计</h3>
+            <div class="stat-card-wrap" id="statCardBox">
+                <div class="stat-card">加载中…</div>
+            </div>
+            <div id="rankWrap">
+                <div class="rank-block">
+                    <h4>🏆 邀请榜（前50，按 invite_valid_count 降序）</h4>
+                    <div id="rankInvite">加载…</div>
+                </div>
+                <div class="rank-block">
+                    <h4>⭐ 被认可榜（前50，按 high_value_count 降序）</h4>
+                    <div id="rankHighVal">加载…</div>
+                </div>
+                <div class="rank-block">
+                    <h4>📝 发布榜（前50，按Demo发布数量降序）</h4>
+                    <div id="rankPublish">加载…</div>
+                </div>
+            </div>
+        </div>
+        <div class="tab-panel" id="tab-setting">
             <h3>全局网站配置</h3>
             <div class="form-item">
-                <label>网站公告</label>
-                <textarea id="inputNotice" rows="4"></textarea>
+                <label>Hero标题 hero_title</label>
+                <input id="inputHeroTitle">
             </div>
             <div class="form-item">
-                <label>首页简介 Hero介绍</label>
-                <textarea id="inputIntro" rows="4"></textarea>
+                <label>Hero简介 hero_intro</label>
+                <textarea id="inputHeroIntro" rows="3"></textarea>
+            </div>
+            <div class="form-item">
+                <label>网站公告 notice</label>
+                <textarea id="inputNotice" rows="3"></textarea>
+            </div>
+            <div class="form-item">
+                <label>页脚免责 footer_disclaimer</label>
+                <textarea id="inputFooterDisclaimer" rows="2"></textarea>
+            </div>
+            <div class="form-item">
+                <label>发布页提示 submit_tip</label>
+                <textarea id="inputSubmitTip" rows="4"></textarea>
+            </div>
+            <div class="form-item">
+                <label>个人中心帮助 profile_help</label>
+                <textarea id="inputProfileHelp" rows="4"></textarea>
+            </div>
+            <div class="form-item">
+                <label>首页二维码链接 qr_code_url</label>
+                <input id="inputQrCodeUrl">
             </div>
             <button class="btn-blue" id="saveSettingBtn">保存修改</button>
         </div>
         <div class="tab-panel" id="tab-game">
-            <h3>全部游戏管理列表 <span style="color:#ffb300;font-size:14px;">(黄色边框=用户提交曝光申请待处理)</span></h3>
+            <h3>全部游戏管理列表</h3>
             <div id="gameListBox"></div>
         </div>
         <div class="tab-panel" id="tab-review">
@@ -155,6 +214,53 @@
         <div class="tab-panel" id="tab-feedback">
             <h3>站长信箱｜用户反馈</h3>
             <div id="feedbackListBox"></div>
+        </div>
+        <div class="tab-panel" id="tab-user">
+            <h3>用户管理（封禁 / 设置官方账号）</h3>
+            <div id="userListBox"></div>
+        </div>
+        <div class="tab-panel" id="tab-achievement">
+            <h3>添加新荣誉</h3>
+            <div class="form-item">
+                <label>荣誉名称（name）</label>
+                <input id="achName">
+            </div>
+            <div class="form-item">
+                <label>图标（icon，如 🌱）</label>
+                <input id="achIcon">
+            </div>
+            <div class="form-item">
+                <label>描述（description）</label>
+                <textarea id="achDesc" rows="2"></textarea>
+            </div>
+            <div class="form-item">
+                <label>条件类型（condition_type）</label>
+                <select id="achCondType">
+                    <option value="registration_order">registration_order — 注册名次</option>
+                    <option value="demo_count">demo_count — 发布 Demo 数</option>
+                    <option value="comment_count">comment_count — 评论数</option>
+                    <option value="approved_count">approved_count — 高价值评论数</option>
+                </select>
+            </div>
+            <div class="form-item">
+                <label>触发数值（condition_value，数字）</label>
+                <input type="number" id="achCondVal">
+            </div>
+            <div class="form-item">
+                <label>额外条件 extra_conditions（JSON，选填）</label>
+                <textarea id="achExtraCond" placeholder='示例：[{"type":"demo_count","value":3}]' rows="3"></textarea>
+                <div style="font-size:12px;color:#aaa;margin-top:4px;">提示：前3000名注册 + 3个Demo + 20条高价值认可 + 邀请5人，就用主条件+额外条件实现</div>
+            </div>
+            <button class="btn-blue" id="btnAddAch">添加荣誉</button>
+            <hr style="margin:24px 0;border-color:#444;">
+            <h3>已有荣誉列表</h3>
+            <div id="achListBox">加载中…</div>
+        </div>
+        <div class="tab-panel" id="tab-bounty">
+            <h3>悬赏管理</h3>
+            <div style="margin-top:16px;line-height:1.7;color:#bbbbbb;">
+                悬赏功能即将上线，开发者可发起付费测试悬赏，平台抽取部分维护费用后剩余金额将奖励优质评论者。
+            </div>
         </div>
     </div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -168,12 +274,22 @@ const adminMain = document.getElementById("adminMain");
 const loginBtn = document.getElementById("loginBtn");
 const logoutBtn = document.getElementById("logoutBtn");
 const lockTip = document.getElementById("lockTip");
+const achName = document.getElementById("achName");
+const achIcon = document.getElementById("achIcon");
+const achDesc = document.getElementById("achDesc");
+const achCondType = document.getElementById("achCondType");
+const achCondVal = document.getElementById("achCondVal");
+const achExtraCond = document.getElementById("achExtraCond");
+const btnAddAch = document.getElementById("btnAddAch");
+const achListBox = document.getElementById("achListBox");
+
 (async function checkSession(){
     const {data:{session}} = await client.auth.getSession();
     if(session){
         showAdminPanel();
     }
 })();
+
 loginBtn.onclick = async function(){
     lockTip.innerText = "";
     const email = document.getElementById("adminEmail").value.trim();
@@ -190,16 +306,19 @@ loginBtn.onclick = async function(){
         lockTip.innerText = "登录失败："+err.message;
     }
 };
+
 logoutBtn.onclick = async function(){
     await client.auth.signOut();
     adminMain.style.display = "none";
     lockScreen.style.display = "block";
 };
+
 function showAdminPanel(){
     lockScreen.style.display = "none";
     adminMain.style.display = "block";
     initAdminPage();
 }
+
 document.querySelectorAll(".tab-btn").forEach(btn=>{
     btn.onclick = function(){
         document.querySelectorAll(".tab-btn").forEach(b=>b.classList.remove("active"));
@@ -207,24 +326,112 @@ document.querySelectorAll(".tab-btn").forEach(btn=>{
         this.classList.add("active");
         const tabId = this.dataset.tab;
         document.getElementById(tabId).classList.add("show");
+        if(tabId === "tab-dashboard"){
+            loadDashboard();
+        }
     }
 })
+
 async function initAdminPage(){
     await loadSettingData();
     await loadAllGames();
     await loadAllReviews();
     await loadFeedbacks();
+    await loadAllUsers();
+    await loadAchievementsList();
+    bindAchFormEvents();
+    await loadDashboard();
+}
+
+async function loadDashboard(){
+    const statCardBox = document.getElementById("statCardBox");
+    const rankInvite = document.getElementById("rankInvite");
+    const rankHighVal = document.getElementById("rankHighVal");
+    const rankPublish = document.getElementById("rankPublish");
+    try{
+        const [
+            {count:userCount},
+            {count:demoCount},
+            {count:cmtCount}
+        ] = await Promise.all([
+            client.from("profiles").select("*",{count:"exact",head:true}),
+            client.from("demos").select("*",{count:"exact",head:true}),
+            client.from("comments").select("*",{count:"exact",head:true})
+        ]);
+        statCardBox.innerHTML = `
+            <div class="stat-card"><div>总用户数</div><div class="stat-num">${userCount??0}</div></div>
+            <div class="stat-card"><div>总Demo数</div><div class="stat-num">${demoCount??0}</div></div>
+            <div class="stat-card"><div>总评论数</div><div class="stat-num">${cmtCount??0}</div></div>
+        `;
+        const {data:inviteRank} = await client.from("profiles")
+            .select("nickname,display_id,invite_valid_count")
+            .order("invite_valid_count",{ascending:false})
+            .limit(50);
+        let inviteHtml = "";
+        if(inviteRank&&inviteRank.length>0){
+            inviteRank.forEach((u,idx)=>{
+                inviteHtml += `<div class="rank-item">${idx+1}. ${escapeHtml(u.nickname||"匿名")}｜ID:${escapeHtml(u.display_id||"‑")}｜邀请:${Number(u.invite_valid_count||0)}</div>`;
+            })
+        }else inviteHtml = "<div class='rank-item'>暂无数据</div>";
+        rankInvite.innerHTML = inviteHtml;
+
+        const {data:highValRank} = await client.from("profiles")
+            .select("nickname,display_id,high_value_count")
+            .order("high_value_count",{ascending:false})
+            .limit(50);
+        let highValHtml = "";
+        if(highValRank&&highValRank.length>0){
+            highValRank.forEach((u,idx)=>{
+                highValHtml += `<div class="rank-item">${idx+1}. ${escapeHtml(u.nickname||"匿名")}｜ID:${escapeHtml(u.display_id||"‑")}｜被认可:${Number(u.high_value_count||0)}</div>`;
+            })
+        }else highValHtml = "<div class='rank-item'>暂无数据</div>";
+        rankHighVal.innerHTML = highValHtml;
+
+        const {data:allDemos} = await client.from("demos").select("user_id");
+        const pubCountMap = {};
+        if(allDemos){
+            allDemos.forEach(d=>{
+                pubCountMap[d.user_id] = (pubCountMap[d.user_id]||0)+1;
+            })
+        }
+        const uidList = Object.keys(pubCountMap);
+        const {data:pubUsers} = await client.from("profiles")
+            .select("id,nickname,display_id")
+            .in("id",uidList);
+        const pubUserMap = {};
+        if(pubUsers) pubUsers.forEach(p=>pubUserMap[p.id]=p);
+        const pubArr = uidList.map(uid=>{
+            const p = pubUserMap[uid]||{};
+            return {
+                nickname:p.nickname||"匿名",
+                display_id:p.display_id||"‑",
+                cnt:pubCountMap[uid]
+            }
+        }).sort((a,b)=>b.cnt - a.cnt).slice(0,50);
+        let pubHtml = "";
+        pubArr.forEach((item,idx)=>{
+            pubHtml += `<div class="rank-item">${idx+1}. ${escapeHtml(item.nickname)}｜ID:${escapeHtml(item.display_id)}｜发布Demo:${item.cnt}</div>`;
+        })
+        if(pubArr.length===0) pubHtml = "<div class='rank-item'>暂无数据</div>";
+        rankPublish.innerHTML = pubHtml;
+    }catch(err){
+        statCardBox.innerHTML = `<div style="color:#f87171;">统计失败：${escapeHtml(err.message)}</div>`;
+    }
 }
 
 async function loadSettingData(){
     try{
-        const {data,error}=await client.from("settings").select("*").eq("id",1).maybeSingle();
+        const {data,error}=await client.from("settings").select("*").eq("id",1).single();
         if(error) throw error;
-        const row = data || { notice:"", intro:"" };
-        document.getElementById("inputNotice").value = row.notice||"";
-        document.getElementById("inputIntro").value = row.intro||"";
+        document.getElementById("inputHeroTitle").value = data.hero_title||"";
+        document.getElementById("inputHeroIntro").value = data.hero_intro||"";
+        document.getElementById("inputNotice").value = data.notice||"";
+        document.getElementById("inputFooterDisclaimer").value = data.footer_disclaimer||"";
+        document.getElementById("inputSubmitTip").value = data.submit_tip||"";
+        document.getElementById("inputProfileHelp").value = data.profile_help||"";
+        document.getElementById("inputQrCodeUrl").value = data.qr_code_url||"";
     }catch(err){
-        console.warn("读取设置：",err.message);
+        alert("读取设置失败："+err.message);
     }
 }
 
@@ -232,9 +439,16 @@ document.getElementById("saveSettingBtn").onclick = async function(){
     const btn = this;
     btn.disabled=true;
     try{
+        const hero_title = document.getElementById("inputHeroTitle").value;
+        const hero_intro = document.getElementById("inputHeroIntro").value;
         const notice = document.getElementById("inputNotice").value;
-        const intro = document.getElementById("inputIntro").value;
-        const {error}=await client.from("settings").upsert({id:1, notice,intro});
+        const footer_disclaimer = document.getElementById("inputFooterDisclaimer").value;
+        const submit_tip = document.getElementById("inputSubmitTip").value;
+        const profile_help = document.getElementById("inputProfileHelp").value;
+        const qr_code_url = document.getElementById("inputQrCodeUrl").value;
+        const {error}=await client.from("settings").update({
+            hero_title,hero_intro,notice,footer_disclaimer,submit_tip,profile_help,qr_code_url
+        }).eq("id",1);
         if(error) throw error;
         alert("保存成功，已经即时生效！");
     }catch(err){
@@ -250,51 +464,33 @@ async function loadAllGames(){
     try{
         const {data,error}=await client.from("demos").select("*").order("created_at",{ascending:false});
         if(error) throw error;
+        const games = data||[];
+        const uidList = [...new Set(games.map(item=>item.user_id).filter(uid=>uid))];
+        let devNickMap = {};
+        if(uidList.length>0){
+            const {data:profilesArr} = await client.from("profiles").select("id,nickname").in("id",uidList);
+            if(profilesArr){
+                profilesArr.forEach(p=>{
+                    devNickMap[p.id] = p.nickname;
+                })
+            }
+        }
         let html = "";
-        data.forEach(g=>{
-            const isPendingApply = !!g.apply_promote && !g.sponsored;
-            const highlightClass = isPendingApply ? "row-item apply-promote" : "row-item";
-            let showExpire = "";
-            if(g.promote_expire){
-                showExpire = new Date(g.promote_expire).toLocaleString();
-            }
-            let amountText = g.promote_amount ? `申请人期望金额：¥${g.promote_amount}`:"申请人未填写金额";
-            const devStage = escapeHtml(g.dev_stage || "概念原型");
-            const devLogText = escapeHtml(g.dev_log || "无");
-            const viewCount = g.view_count ?? 0;
-            // 联系邮箱：只要不为空就展示（申请曝光的高亮条目优先展示，加粗加亮色方便站长复制）
-            let contactEmailHtml = "";
-            if(g.contact_email){
-                const mailStyle = isPendingApply ? "font-weight:bold;color:#73d0ff;" : "color:#73d0ff;";
-                contactEmailHtml = `<div class="small-note" style="${mailStyle}">📧 联系邮箱：${escapeHtml(g.contact_email)}</div>`;
-            }
-
-            html += `<div class="${highlightClass}">
+        games.forEach(g=>{
+            const devName = devNickMap[g.user_id] || "匿名";
+            html += `<div class="row-item">
                 <div><b>${escapeHtml(g.name)}</b>
+                | Demo码：${escapeHtml(g.code||"‑")}
+                | 发布者：${escapeHtml(devName)}
                 | status:${g.status}
-                | 开发阶段:${devStage}
-                | 👀浏览量:${viewCount}
-                | 用户申请曝光:${g.apply_promote?"✅是":"❌否"}
-                | 已启用付费曝光:${g.sponsored?"✅已启用":"❌未启用"}
-                | ${isPendingApply ? `<span style="color:#ffdd77">${amountText}</span>`:""}
-                | 曝光到期(本地):${escapeHtml(showExpire)}</div>
-                <div class="small-note">开发者动态：${devLogText}</div>
-                ${contactEmailHtml}
-                <div style="margin:6px 0;">
-                    <input class="inline-input" type="text" id="expire_${g.id}" placeholder="例：2026‑12‑31 23:59" value="">
-                    <span style="color:#aaa;font-size:12px;">填写曝光到期时间（批准申请时使用）</span>
+                | is_official:${g.is_official?"✅是":"❌否"}
                 </div>
-                <div>`;
-            if(g.apply_promote){
-                html += `<button class="btn-green" onclick="approveSponsor('${g.id}')">批准并启用曝光</button>
-                <button class="btn-orange" onclick="rejectSponsor('${g.id}')">拒绝申请</button>`;
-            }
-            if(g.sponsored){
-                html += `<button class="btn-red" onclick="stopSponsor('${g.id}')">停止曝光</button>`;
-            }
-            html += `<button class="btn-orange" onclick="toggleStatus('${g.id}','${g.status}')">${g.status==='inactive'?"重新上架":"强制下架"}</button>
-            <button class="btn-red" onclick="deleteGame('${g.id}')">彻底删除</button>
-            </div></div>`;
+                <div style="margin:8px 0;">
+                    <button class="btn-orange" onclick="toggleStatus('${g.id}','${g.status}')">${g.status==='inactive'?"重新上架":"强制下架"}</button>
+                    <button class="btn-green" onclick="toggleOfficialDemo('${g.id}',${!!g.is_official})">${g.is_official?"取消官方":"设为官方"}</button>
+                    <button class="btn-red" onclick="deleteGame('${g.id}')">彻底删除</button>
+                </div>
+            </div>`;
         })
         box.innerHTML = html||"<p>暂无游戏</p>";
     }catch(err){
@@ -302,62 +498,13 @@ async function loadAllGames(){
     }
 }
 
-window.approveSponsor = async function(gameId){
-    const inputDom = document.getElementById("expire_"+gameId);
-    const localTimeStr = inputDom.value.trim();
-    if(!localTimeStr){
-        alert("请填写曝光到期时间！格式示例：2026‑12‑31 23:59");
-        return;
-    }
-    const d = new Date(localTimeStr);
-    if(isNaN(d.getTime())){
-        alert("时间格式错误！");
-        return;
-    }
-    const payload = {
-        sponsored:true,
-        promote_expire: d.toISOString(),
-        apply_promote:false
-    };
+window.toggleOfficialDemo = async function(gameId,currentIsOfficial){
     try{
-        const {error}=await client.from("demos").update(payload).eq("id",gameId);
+        const {error}=await client.from("demos").update({is_official:!currentIsOfficial}).eq("id",gameId);
         if(error) throw error;
-        alert("✅已批准并启用付费曝光");
         await loadAllGames();
-    }catch(e){
-        alert("操作失败："+e.message);
-    }
+    }catch(e){alert("操作失败："+e.message);}
 }
-window.rejectSponsor = async function(gameId){
-    if(!confirm("确定拒绝该曝光申请？将清除用户申请标记。")) return;
-    try{
-        const {error}=await client.from("demos").update({apply_promote:false}).eq("id",gameId);
-        if(error) throw error;
-        alert("✅已拒绝申请");
-        await loadAllGames();
-    }catch(e){
-        alert("操作失败："+e.message);
-    }
-}
-
-window.stopSponsor = async function(gameId){
-    if(!confirm("确认停止该项目付费曝光？")) return;
-    try{
-        const {error}=await client.from("demos")
-            .update({
-                sponsored: false,
-                promote_expire: null,
-                apply_promote: false
-            })
-            .eq("id",gameId);
-        if(error) throw error;
-        alert("✅已停止曝光");
-        await loadAllGames();
-    }catch(e){
-        alert("操作失败："+e.message);
-    }
-}
-
 window.toggleStatus = async function(id,status){
     const newStatus = status==="inactive"?"active":"inactive";
     try{
@@ -379,21 +526,14 @@ async function loadAllReviews(){
     const box = document.getElementById("reviewListBox");
     box.innerHTML="加载评论...";
     try{
-        const {data:gameList,error:gErr}=await client.from("demos").select("id,name");
-        if(gErr) throw gErr;
-        const gameMap = {};
-        gameList.forEach(item=>{
-            gameMap[item.id] = item.name;
-        });
         const {data,error}=await client.from("comments").select("*").order("created_at",{ascending:false});
         if(error) throw error;
         let html = "";
         data.forEach(r=>{
-            const gameName = gameMap[r.demo_id] || "未知游戏";
             html += `
             <div class="row-item">
-                <div>【${escapeHtml(gameName)}】昵称：${escapeHtml(r.nickname||"匿名")}｜星级${r.star}｜${new Date(r.created_at).toLocaleString()}</div>
-                <div>建议：${escapeHtml(r.content||"")}</div>
+                <div>昵称：${escapeHtml(r.nickname||"匿名")}｜星级${r.star}｜${new Date(r.created_at).toLocaleString()}</div>
+                <div>内容：${escapeHtml(r.content||"")}</div>
                 <button class="btn-red" onclick="delReview('${r.id}')">删除这条评论</button>
             </div>
             `
@@ -403,6 +543,7 @@ async function loadAllReviews(){
         box.innerHTML="读取评论失败："+err.message;
     }
 }
+
 window.delReview = async function(rid){
     if(!confirm("确认删除该评论？")) return;
     try{
@@ -438,6 +579,7 @@ async function loadFeedbacks(){
         box.innerHTML="读取反馈失败："+err.message;
     }
 }
+
 window.delFeedback = async function(fid){
     if(!confirm("确认删除这条用户反馈？")) return;
     try{
@@ -446,6 +588,154 @@ window.delFeedback = async function(fid){
         await loadFeedbacks();
     }catch(e){
         alert("删除反馈失败："+e.message);
+    }
+}
+
+async function loadAllUsers(){
+    const box = document.getElementById("userListBox");
+    box.innerHTML="加载用户列表...";
+    try{
+        const {data,error}=await client.from("profiles").select("id,nickname,email,is_official,is_banned,created_at").order("created_at",{ascending:false});
+        if(error) throw error;
+        let html = "";
+        data.forEach(u=>{
+            html += `<div class="row-item">
+                <div>
+                    ID:${escapeHtml(u.id)}｜昵称：${escapeHtml(u.nickname||"‑")}｜邮箱：${escapeHtml(u.email||"‑")}
+                    <br />
+                    is_official:${u.is_official?"✅是":"❌否"}｜is_banned:${u.is_banned?"🔴已封禁":"🟢正常"}｜注册：${u.created_at?new Date(u.created_at).toLocaleString():"‑"}
+                </div>
+                <div style="margin:8px 0;">
+                    <button class="btn-orange" onclick="toggleBanned('${u.id}',${!!u.is_banned})">${u.is_banned?"解封":"封禁"}</button>
+                    <button class="btn-green" onclick="toggleUserOfficial('${u.id}',${!!u.is_official})">${u.is_official?"取消官方":"设为官方"}</button>
+                </div>
+            </div>`;
+        })
+        box.innerHTML = html||"<p>暂无用户</p>";
+    }catch(err){
+        box.innerHTML="读取用户失败："+err.message;
+    }
+}
+
+window.toggleBanned = async function(uid,currentBan){
+    try{
+        const {error}=await client.from("profiles").update({is_banned:!currentBan}).eq("id",uid);
+        if(error) throw error;
+        await loadAllUsers();
+    }catch(e){alert("操作失败："+e.message);}
+}
+
+// ✅ 修改：设置用户为官方时，同步更新他发布的所有 Demo
+window.toggleUserOfficial = async function(uid,currentOff){
+    try{
+        const newVal = !currentOff;
+        // 1. 更新用户 profile
+        const {error:uErr} = await client.from("profiles")
+            .update({is_official: newVal})
+            .eq("id", uid);
+        if(uErr) throw uErr;
+        // 2. 同步更新该用户发布的所有 Demo 的 is_official 字段
+        const {error:dErr} = await client.from("demos")
+            .update({is_official: newVal})
+            .eq("user_id", uid);
+        if(dErr) throw dErr;
+        await loadAllUsers();
+        await loadAllGames();
+        alert(newVal ? "✅ 已设为官方，该用户发布的所有 Demo 已同步打上官方标签" : "✅ 已取消官方，该用户所有 Demo 的官方标签已移除");
+    }catch(e){
+        alert("操作失败："+e.message);
+    }
+}
+
+async function loadAchievementsList(){
+    achListBox.innerHTML = "加载荣誉列表…";
+    try{
+        const {data,error} = await client.from("achievements").select("*").order("created_at",{ascending:false});
+        if(error) throw error;
+        if(!data||data.length===0){
+            achListBox.innerHTML = "<p>暂无荣誉记录</p>";
+            return;
+        }
+        let html = "";
+        data.forEach(item=>{
+            html += `
+            <div class="row-item">
+                <div>${escapeHtml(item.icon||"")} <b>${escapeHtml(item.name)}</b></div>
+                <div>描述：${escapeHtml(item.description||"")}</div>
+                <div>条件：${escapeHtml(item.condition_type)}｜阈值：${Number(item.condition_value)}</div>
+                <div>额外条件：${escapeHtml(JSON.stringify(item.extra_conditions||{}))}</div>
+                <div>enabled：${item.enabled?"✅true":"❌false"}</div>
+                <button class="btn-red" onclick="delAchievement('${item.id}')">删除</button>
+            </div>
+            `;
+        })
+        achListBox.innerHTML = html;
+    }catch(err){
+        achListBox.innerHTML = "读取荣誉失败："+err.message;
+    }
+}
+
+window.delAchievement = async function(achId){
+    if(!confirm("确定要删除这条荣誉？不可恢复！")) return;
+    try{
+        const {error} = await client.from("achievements").delete().eq("id",achId);
+        if(error) throw error;
+        await loadAchievementsList();
+    }catch(e){
+        alert("删除荣誉失败："+e.message);
+    }
+}
+
+function bindAchFormEvents(){
+    btnAddAch.onclick = async function(){
+        const nameVal = achName.value.trim();
+        const iconVal = achIcon.value.trim();
+        const descVal = achDesc.value.trim();
+        const condTypeVal = achCondType.value;
+        const condVal = Number(achCondVal.value);
+        const extraRaw = achExtraCond.value.trim();
+        let extraObj = null;
+        if(extraRaw){
+            try{
+                extraObj = JSON.parse(extraRaw);
+            }catch(err){
+                alert("额外条件JSON格式错误，请检查！");
+                return;
+            }
+        }
+        if(!nameVal){
+            alert("请填写荣誉名称");
+            return;
+        }
+        if(isNaN(condVal)){
+            alert("触发数值必须为数字");
+            return;
+        }
+        btnAddAch.disabled = true;
+        try{
+            const insertObj = {
+                name: nameVal,
+                icon: iconVal,
+                description: descVal,
+                condition_type: condTypeVal,
+                condition_value: condVal,
+                extra_conditions: extraObj,
+                enabled: true
+            };
+            const {error} = await client.from("achievements").insert([insertObj]);
+            if(error) throw error;
+            achName.value = "";
+            achIcon.value = "";
+            achDesc.value = "";
+            achCondVal.value = "";
+            achExtraCond.value = "";
+            alert("添加荣誉成功");
+            await loadAchievementsList();
+        }catch(e){
+            alert("添加失败："+e.message);
+        }finally{
+            btnAddAch.disabled = false;
+        }
     }
 }
 

@@ -3,269 +3,386 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>发布游戏</title>
+    <title>发布游戏 - GameDemoShare</title>
     <style>
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            font-family: system-ui, sans-serif;
-        }
-        body {
-            background:#19192b;
-            color:#eeeeee;
-            max-width:720px;
-            margin: 24px auto;
-            padding:16px;
-        }
-        nav {
-            display:flex;
-            gap:24px;
-            margin-bottom:24px;
-            padding-bottom:10px;
-            border-bottom:1px solid #333550;
-        }
-        nav a {
-            color:#aaa;
-            text-decoration:none;
-        }
-        nav a.active{
-            color:#48a8ff;
-            font-weight:bold;
-        }
-        h1{
-            font-size:24px;
-            margin-bottom:12px;
-        }
-        .tip{
-            font-size:13px;
-            color:#bbbbdd;
-            margin-bottom:20px;
-        }
-        label{
-            display:block;
-            margin-top:12px;
-        }
-        .checkbox-row{
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: system-ui, sans-serif; }
+        body { background:#f9fafc; color:#111111; max-width:720px; margin: 24px auto; padding:16px; min-height:100vh; }
+        nav { display:flex; gap:24px; margin-bottom:24px; padding-bottom:10px; border-bottom:1px solid rgba(224, 224, 224, 0.6); box-shadow: 0 2px 8px rgba(0,0,0,0.03); align-items:center; background: rgba(255,255,255,0.72); backdrop-filter: blur(8px); border-radius:8px; padding:10px 16px; }
+        nav a { color:#333333; text-decoration:none; }
+        nav a.active{ color:#2563eb; font-weight:bold; }
+        .nav-user-area{ margin-left:auto; }
+        h1{ font-size:24px; margin-bottom:12px; }
+        .tip{ font-size:13px; color:#888888; margin-bottom:20px; }
+        .demo-code-box{ background:#f0f2f5; padding:12px 16px; border-radius:8px; margin-bottom:16px; }
+        .demo-code-box label{ font-size:14px; color:#666; }
+        .demo-code-box .code-text{ font-size:17px; font-weight:bold; color:#2563eb; margin-top:4px; }
+        label{ display:block; margin-top:12px; color:#333333; }
+        input,textarea,select{ width:100%; background:#ffffff; border:1px solid #e0e0e0; color:#111111; padding:10px; border-radius:6px; font-size:15px; margin:6px 0; box-shadow: 0 2px 6px rgba(0,0,0,0.02); }
+        input:focus,textarea:focus,select:focus{ outline:none; border-color:#2563eb; }
+        textarea{ min-height:120px; resize:vertical; }
+        .form-row-btn{ display:flex; gap:12px; margin-top:24px; flex-wrap:wrap; }
+        button{ padding:10px 16px; border:none; border-radius:6px; cursor:pointer; font-size:15px; }
+        .btn-submit{ background: linear-gradient(135deg,#2563eb,#3b73ee); color:#ffffff; }
+        .btn-delete{ background:#ff4d4f; color:#fff; }
+        .btn-back{ background:#888; color:#fff; }
+        button:disabled{ opacity:0.45; cursor:not-allowed; }
+        .warn-tip-box{ background:#f5f5f5; padding:14px 16px; border-radius:8px; margin-top:20px; font-size:14px; color:#444; line-height:1.7; }
+        .login-lock-card{ background:#ffffff; box-shadow: 0 4px 16px rgba(0,0,0,0.04), 0 1px 3px rgba(0,0,0,0.02); border-radius:12px; padding:40px 24px; text-align:center; margin-top:40px; }
+        .login-lock-card p{ margin-bottom:24px; font-size:16px; color:#444; }
+        .login-lock-btn-group{ display:flex; gap:12px; justify-content:center; flex-wrap:wrap; }
+        .login-lock-btn-group button{ padding:10px 20px; }
+        footer { margin-top:40px; padding-top:16px; border-top:1px solid #e0e0e0; color:#888888; font-size:14px; }
+        footer a{ color:#2563eb; text-decoration:none; font-size:13px; }
+        .checkbox-wrap{
             display:flex;
             align-items:center;
             gap:8px;
-            margin-top:12px;
+            margin-top:14px;
         }
-        .checkbox-row input[type="checkbox"]{
+        .checkbox-wrap input[type="checkbox"]{
             width:auto;
             margin:0;
         }
-        .hidden-block{
-            display:none;
-            margin-top:8px;
-        }
-        input,textarea,select{
-            width:100%;
-            background:#222238;
-            border:1px solid #444470;
-            color:#fff;
-            padding:10px;
-            border-radius:6px;
-            font-size:15px;
-            margin:6px 0;
-        }
-        textarea{
-            min-height:120px;
-            resize:vertical;
-        }
-        button{
-            margin-top:16px;
-            padding:10px 16px;
-            border:none;
-            border-radius:6px;
-            cursor:pointer;
-            font-size:15px;
-            background:#247bdd;
-            color:white;
-        }
-        footer {
-            margin-top:40px;
-            padding-top:16px;
-            border-top:1px solid #333;
-            color:#888;
-            font-size:14px;
-        }
-        footer a{
-            color:#61b4ff;
+        .placeholder-tip-text{
             font-size:13px;
-            text-decoration:none;
+            color:#777;
+            margin-top:4px;
         }
     </style>
 </head>
 <body>
     <nav>
         <a href="index.html">首页</a>
-        <a href="submit.html" class="active">发布</a>
-        <a href="ranking.html">排行榜</a>
+        <a href="demo-list.html">可玩Demo</a>
+        <span class="nav-user-area" id="navUserBox"></span>
     </nav>
-
-    <!-- 新增红色密钥警告 -->
-    <div style="background:#441818;color:#ff7c7c;padding:10px 12px;border-radius:6px;margin-bottom:16px;border:1px solid #992c2c;">
-⚠️ 密钥是您修改游戏的唯一凭证，不绑定账号，丢失将无法找回，请务必截图或保存在备忘录！
-    </div>
-
-    <h1>发布新游戏</h1>
-    <div class="tip">填写信息提交后，生成专属编辑密钥用于后台管理</div>
-    <label>游戏名称</label>
-    <input id="gameName" placeholder="输入游戏名称">
-    <label>开发阶段</label>
-    <select id="devStageSelect">
-        <option value="概念原型">概念原型</option>
-        <option value="早期开发">早期开发</option>
-        <option value="测试阶段">测试阶段</option>
-        <option value="稳定版">稳定版</option>
-    </select>
-    <label>标签（逗号分隔）</label>
-    <input id="gameTags" placeholder="例如：策略,独立游戏">
-    <label>简介</label>
-    <textarea id="gameDesc"></textarea>
-    <label>开发者动态（选填）</label>
-    <textarea id="devLogInput" placeholder="例如：本周修复了闪退bug，欢迎反馈"></textarea>
-    <label>外部链接</label>
-    <input id="gameUrl" placeholder="游戏访问地址">
-    <label>版本号</label>
-    <input id="gameVersion" placeholder="v0.1">
-    <div class="checkbox-row">
-        <input type="checkbox" id="applySponsor">
-        <label for="applySponsor">申请付费曝光推广</label>
-    </div>
-    <div class="hidden-block" id="amountWrap">
-        <label>请输入期望曝光金额（如：50元）</label>
-        <input id="promoteAmountInput" placeholder="只填写数字，例：50">
-
-        <!-- 新增：联系邮箱输入框 -->
-        <label>联系邮箱（用于曝光推广沟通）</label>
-        <input id="contactEmailInput" placeholder="站长将通过该邮箱和您沟通曝光合作">
-    </div>
-    <button id="btnSubmit">提交发布</button>
+    <div id="pageContainer"></div>
     <footer>
         <div>© 2026 GameDemoShare。仅存储外部链接，不上传游戏本体文件。</div>
-        <div style="margin-top:6px;">
-            <a href="edit.html">【开发者管理入口】</a>
-        </div>
     </footer>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script>
-const SUPABASEURL = "https://kczxtbmgigbfofdzkynm.supabase.co";
-const SUPABASEANONKEY = "sb_publishable_jiyD19NDY1DEc7jVFOQzaw_I-85Ncte";
-const { createClient } = window.supabase;
-const supabaseClient = createClient(SUPABASEURL, SUPABASEANONKEY);
-function getMyDemos(){
-    const raw = localStorage.getItem("my_demos");
-    if(!raw) return [];
-    try{ return JSON.parse(raw); }catch{ return []; }
-}
-function saveMyDemos(arr){
-    localStorage.setItem("my_demos", JSON.stringify(arr));
-}
-function addDemoLocal(id, edit_key, game_name){
-    let list = getMyDemos();
-    const exist = list.find(item => item.id === id);
-    if(!exist){
-        list.unshift({id, edit_key, game_name});
-        saveMyDemos(list);
-    }
-}
-const applySponsor = document.querySelector("#applySponsor");
-const amountWrap = document.querySelector("#amountWrap");
-applySponsor.onchange = function(){
-    if(this.checked){
-        amountWrap.style.display = "block";
-    }else{
-        amountWrap.style.display = "none";
-    }
-}
-const btnSubmit = document.querySelector("#btnSubmit");
-btnSubmit.onclick = async ()=>{
-    const name = document.querySelector("#gameName").value.trim();
-    const devStage = document.querySelector("#devStageSelect").value;
-    const devLog = document.querySelector("#devLogInput").value.trim();
-    const tags = document.querySelector("#gameTags").value.trim();
-    const desc = document.querySelector("#gameDesc").value.trim();
-    const url = document.querySelector("#gameUrl").value.trim();
-    const ver = document.querySelector("#gameVersion").value.trim();
-    const applySponsorChecked = applySponsor.checked;
-
-    let promoteAmount = null;
-    let contactEmailVal = null;
-
-    if(applySponsorChecked){
-        const val = document.querySelector("#promoteAmountInput").value.trim();
-        let rawMail = document.querySelector("#contactEmailInput").value.trim();
-
-        if(!val){
-            return alert("勾选申请曝光时，请填写期望曝光金额");
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script>
+        const SUPABASE_URL = "https://kczxtbmgigbfofdzkynm.supabase.co";
+        const SUPABASE_ANON_KEY = "sb_publishable_jiyD19NDY1DEc7jVFOQzaw_I-85Ncte";
+        const { createClient } = window.supabase;
+        const supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        let editDemoId = null;
+        let currentUserId = null;
+        let editDemoData = null;
+        const navUserBox = document.getElementById("navUserBox");
+        const pageContainer = document.getElementById("pageContainer");
+        // 修复Bug：去掉多余空格
+        function escapeHtml(s){
+            if(!s) return "";
+            return s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
         }
-        promoteAmount = Number(val);
-        if(isNaN(promoteAmount) || promoteAmount <=0){
-            return alert("金额必须是大于0数字");
+        // 生成6位大小写字母数字Demo码
+        function generateDemoCode(){
+            const pool = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+            let res = "";
+            for(let i=0;i<6;i++){
+                res += pool.charAt(Math.floor(Math.random()*pool.length));
+            }
+            return res;
         }
-
-        rawMail = rawMail.trim();
-        if(rawMail === ""){
-            return alert("勾选申请曝光后，请务必填写联系邮箱，方便站长与您沟通曝光事宜！");
+        // 获取url id参数
+        function getUrlIdParam(){
+            const params = new URLSearchParams(location.search);
+            return params.get("id") || null;
         }
-        if(!rawMail.includes('@') || !rawMail.includes('.')){
-            return alert("请输入合法的邮箱地址，必须包含 @ 和 .");
+        // 获取随机6位数字
+        function getRandomSixNum(){
+            return Math.floor(Math.random() * 900000 + 100000);
         }
-        contactEmailVal = rawMail;
-    }else{
-        contactEmailVal = null;
-    }
-
-    //兜底拦截：勾选曝光但是邮箱为空
-    if(applySponsorChecked && !contactEmailVal){
-        return alert("业务校验拦截：申请曝光必须填写联系邮箱！");
-    }
-
-    if(!name) return alert("请填写游戏名称");
-
-    const edit_key = crypto.randomUUID ? crypto.randomUUID() : Date.now().toString(36) + Math.random().toString(36).substring(2);
-
-    const insertObj = {
-        edit_key: edit_key,
-        name: name,
-        dev_stage: devStage,
-        dev_log: devLog || null,
-        tags: tags,
-        description: desc,
-        external_url: url,
-        version: ver,
-        status: "active",
-        sponsored: false,
-        apply_promote: applySponsorChecked,
-        promote_amount: promoteAmount,
-        promote_expire: null,
-        contact_email: contactEmailVal
-    };
-
-    const {data, error} = await supabaseClient.from("demos").insert([insertObj]).select();
-    if(error){
-        alert("发布失败:"+error.message);
-        return;
-    }
-    const newId = data[0].id;
-    addDemoLocal(newId, edit_key, name);
-    alert(`发布成功！\n你的编辑密钥：${edit_key}\n请保存密钥，跳转管理面板`);
-    window.location.href = `edit.html?newkey=${encodeURIComponent(edit_key)}`;
-}
-
-//修复escapeHtml >前面多余空格bug
-function escapeHtml(s){
-    if(!s) return "";
-    return s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
-}
-</script>
+        (async function init(){
+            const {data:{user}} = await supabaseClient.auth.getUser();
+            if(!user){
+                // 未登录：中央卡片提示
+                navUserBox.innerHTML = `<a href="login.html">登录 / 注册</a>`;
+                pageContainer.innerHTML = `
+                <div class="login-lock-card">
+                    <p>🔒 需要登录后才能发布。发布游戏Demo需要你先登录平台账号。</p>
+                    <div class="login-lock-btn-group">
+                        <button class="btn-submit" onclick="location.href='login.html'">前往登录</button>
+                        <button class="btn-back" onclick="location.href='index.html'">返回首页</button>
+                    </div>
+                </div>
+                `;
+                return;
+            }
+            currentUserId = user.id;
+            // 渲染导航用户名
+            let displayName = user.user_metadata?.nickname;
+            if(!displayName || !displayName.trim()){
+                displayName = user.email?.includes("@") ? user.email.split("@")[0] : "用户"+getRandomSixNum();
+            }
+            navUserBox.innerHTML = `<a href="profile.html">👤 ${escapeHtml(displayName.trim())}</a>`;
+            editDemoId = getUrlIdParam();
+            if(editDemoId){
+                await loadEditDemoData();
+                renderEditForm();
+            }else{
+                renderCreateForm();
+            }
+        })();
+        async function loadEditDemoData(){
+            const {data:demo,error} = await supabaseClient.from("demos").select("*").eq("id",editDemoId).maybeSingle();
+            if(error || !demo){
+                alert("读取Demo失败");
+                location.href="profile.html";
+                return;
+            }
+            if(demo.user_id !== currentUserId){
+                alert("你无权编辑这条记录");
+                location.href="profile.html";
+                return;
+            }
+            editDemoData = demo;
+        }
+        // 新建发布表单
+        async function renderCreateForm(){
+            let tipText = "🛡️ 开发者保护提醒：本平台不存储您的游戏文件，仅收录外部试玩链接。对于 Unity(C#) 或 Cocos(JS) 项目，强烈建议在打包时开启 IL2CPP 后端、代码混淆及资源加密，以增加反编译难度。建议您在游戏启动界面展示 EULA（最终用户许可协议），必要时通过法律手段维护自身权益。";
+            try{
+                const {data:setting} = await supabaseClient.from("settings").select("submit_tip").eq("id",1).maybeSingle();
+                if(setting && setting.submit_tip && setting.submit_tip.trim()){
+                    tipText = setting.submit_tip.trim();
+                }
+            }catch(e){}
+            pageContainer.innerHTML = `
+            <h1 id="pageTitle">✨ 发布新游戏Demo</h1>
+            <div class="tip">填写信息提交，你的Demo将归属于当前账号</div>
+            <label>游戏名称 *</label>
+            <input id="gameName" placeholder="输入游戏名称">
+            <label>标签（逗号分隔）</label>
+            <input id="gameTags" placeholder="例如：策略,独立游戏">
+            <label>简介 *</label>
+            <textarea id="gameDesc"></textarea>
+            <label>外部试玩链接 *</label>
+            <input id="gameUrl" placeholder="游戏访问地址">
+            <label>版本号</label>
+            <input id="gameVersion" placeholder="v0.1">
+            <label>开发者动态（选填）</label>
+            <textarea id="devLog" placeholder="开发日志、版本更新说明等"></textarea>
+            <label>联系邮箱（选填）</label>
+            <input type="email" id="contactEmail" placeholder="用于平台与你取得联系">
+            <div class="checkbox-wrap">
+                <input type="checkbox" id="cbRewardTest">
+                <label for="cbRewardTest">🔔 开启‘百元悬赏测试’（占位，暂未开放支付）</label>
+            </div>
+            <div id="rewardPlaceholderTip" class="placeholder-tip-text" style="display:none;">⚠️该功能仅UI占位，数据不会写入数据库，等待后续版本开放。</div>
+            <div class="form-row-btn">
+                <button class="btn-submit" id="btnSubmit">提交发布</button>
+                <button class="btn-back" id="btnBack">返回</button>
+            </div>
+            <div class="warn-tip-box">${escapeHtml(tipText)}</div>
+            `;
+            bindCreateEvents();
+            //勾选框显示提示
+            const cb = document.getElementById("cbRewardTest");
+            const tipDom = document.getElementById("rewardPlaceholderTip");
+            cb.onchange = ()=>{
+                tipDom.style.display = cb.checked ? "block" : "none";
+            };
+        }
+        // 修改表单
+        async function renderEditForm(){
+            const d = editDemoData;
+            let tipText = "🛡️ 开发者保护提醒：本平台不存储您的游戏文件，仅收录外部试玩链接。对于 Unity(C#) 或 Cocos(JS) 项目，强烈建议在打包时开启 IL2CPP 后端、代码混淆及资源加密，以增加反编译难度。建议您在游戏启动界面展示 EULA（最终用户许可协议），必要时通过法律手段维护自身权益。";
+            try{
+                const {data:setting} = await supabaseClient.from("settings").select("submit_tip").eq("id",1).maybeSingle();
+                if(setting && setting.submit_tip && setting.submit_tip.trim()){
+                    tipText = setting.submit_tip.trim();
+                }
+            }catch(e){}
+            pageContainer.innerHTML = `
+            <h1 id="pageTitle">✏️ 修改游戏</h1>
+            <div class="demo-code-box">
+                <label>Demo码（不可修改）</label>
+                <div class="code-text">${escapeHtml(d.code||"")}</div>
+            </div>
+            <div class="tip">正在编辑已有Demo，保存后跳转个人中心</div>
+            <label>游戏名称 *</label>
+            <input id="gameName" value="${escapeHtml(d.name||"")}">
+            <label>标签（逗号分隔）</label>
+            <input id="gameTags" value="${escapeHtml(d.tags||"")}">
+            <label>简介 *</label>
+            <textarea id="gameDesc">${escapeHtml(d.description||"")}</textarea>
+            <label>外部试玩链接 *</label>
+            <input id="gameUrl" value="${escapeHtml(d.external_url||"")}">
+            <label>版本号</label>
+            <input id="gameVersion" value="${escapeHtml(d.version||"")}">
+            <label>开发者动态（选填）</label>
+            <textarea id="devLog">${escapeHtml(d.dev_log||"")}</textarea>
+            <label>联系邮箱（选填）</label>
+            <input type="email" id="contactEmail" value="${escapeHtml(d.contact_email||"")}">
+            <div class="checkbox-wrap">
+                <input type="checkbox" id="cbRewardTest">
+                <label for="cbRewardTest">🔔 开启‘百元悬赏测试’（占位，暂未开放支付）</label>
+            </div>
+            <div id="rewardPlaceholderTip" class="placeholder-tip-text" style="display:none;">⚠️该功能仅UI占位，数据不会写入数据库，等待后续版本开放。</div>
+            <div class="form-row-btn">
+                <button class="btn-submit" id="btnSubmit">保存修改</button>
+                <button class="btn-delete" id="btnDelete">删除此游戏</button>
+                <button class="btn-back" id="btnBack">返回</button>
+            </div>
+            <div class="warn-tip-box">${escapeHtml(tipText)}</div>
+            `;
+            bindEditEvents();
+            const cb = document.getElementById("cbRewardTest");
+            const tipDom = document.getElementById("rewardPlaceholderTip");
+            cb.onchange = ()=>{
+                tipDom.style.display = cb.checked ? "block" : "none";
+            };
+        }
+        function bindCreateEvents(){
+            const btnSubmit = document.getElementById("btnSubmit");
+            const btnBack = document.getElementById("btnBack");
+            btnBack.onclick = ()=> location.href="profile.html";
+            btnSubmit.onclick = handleCreateSubmit;
+        }
+        function bindEditEvents(){
+            const btnSubmit = document.getElementById("btnSubmit");
+            const btnDelete = document.getElementById("btnDelete");
+            const btnBack = document.getElementById("btnBack");
+            btnBack.onclick = ()=> location.href="profile.html";
+            btnSubmit.onclick = handleEditSubmit;
+            btnDelete.onclick = handleDeleteDemo;
+        }
+        //发布数量限制校验
+        async function checkPublishLimit(){
+            const {data:profile} = await supabaseClient.from("profiles").select("is_admin,is_official").eq("id",currentUserId).maybeSingle();
+            const privileged = Boolean(profile?.is_admin || profile?.is_official);
+            if(privileged){
+                return {allow:true};
+            }
+            const {count} = await supabaseClient.from("demos").select("*",{count:"exact",head:true}).eq("user_id",currentUserId).eq("status","active");
+            if(count >=3){
+                return {allow:false,msg:"普通用户最多发布 3 个 Demo，请先删除或下架旧 Demo 再发布"};
+            }
+            return {allow:true};
+        }
+        // 新建提交【已修改】
+        async function handleCreateSubmit(){
+            const btnSubmit = document.getElementById("btnSubmit");
+            const gameName = document.querySelector("#gameName");
+            const gameTags = document.querySelector("#gameTags");
+            const gameDesc = document.querySelector("#gameDesc");
+            const gameUrl = document.querySelector("#gameUrl");
+            const gameVersion = document.querySelector("#gameVersion");
+            const devLog = document.querySelector("#devLog");
+            const contactEmail = document.querySelector("#contactEmail");
+            const name = gameName.value.trim();
+            const tags = gameTags.value.trim();
+            const desc = gameDesc.value.trim();
+            const url = gameUrl.value.trim();
+            const ver = gameVersion.value.trim();
+            const dev_log = devLog.value.trim();
+            const contact_email = contactEmail.value.trim();
+            if(!name || !url || !desc){
+                alert("请填写必填项：游戏名称、外部试玩链接、简介");
+                return;
+            }
+            btnSubmit.disabled = true;
+            try{
+                const limitRes = await checkPublishLimit();
+                if(!limitRes.allow){
+                    alert(limitRes.msg);
+                    return;
+                }
+                //=====新增：查询当前用户 is_official=====
+                const {data:prof} = await supabaseClient.from("profiles").select("is_official").eq("id",currentUserId).maybeSingle();
+                const userIsOfficial = Boolean(prof?.is_official);
+                const newCode = generateDemoCode();
+                const insertPayload = {
+                    user_id:currentUserId,
+                    code: newCode,
+                    name,
+                    tags,
+                    description:desc,
+                    external_url:url,
+                    version:ver,
+                    dev_log,
+                    contact_email,
+                    status:"active",
+                    is_official: userIsOfficial,
+                    view_count:0
+                };
+                const {error} = await supabaseClient.from("demos").insert([insertPayload]);
+                if(error) throw error;
+                alert(`发布成功，你的Demo码是 ${newCode}`);
+                location.href="profile.html";
+            }catch(err){
+                alert("发布失败："+err.message);
+            }finally{
+                btnSubmit.disabled = false;
+            }
+        }
+        // 修改提交
+        async function handleEditSubmit(){
+            const btnSubmit = document.getElementById("btnSubmit");
+            const gameName = document.querySelector("#gameName");
+            const gameTags = document.querySelector("#gameTags");
+            const gameDesc = document.querySelector("#gameDesc");
+            const gameUrl = document.querySelector("#gameUrl");
+            const gameVersion = document.querySelector("#gameVersion");
+            const devLog = document.querySelector("#devLog");
+            const contactEmail = document.querySelector("#contactEmail");
+            const name = gameName.value.trim();
+            const tags = gameTags.value.trim();
+            const desc = gameDesc.value.trim();
+            const url = gameUrl.value.trim();
+            const ver = gameVersion.value.trim();
+            const dev_log = devLog.value.trim();
+            const contact_email = contactEmail.value.trim();
+            if(!name || !url || !desc){
+                alert("请填写必填项：游戏名称、外部试玩链接、简介");
+                return;
+            }
+            btnSubmit.disabled = true;
+            try{
+                const updatePayload = {
+                    name,
+                    tags,
+                    description:desc,
+                    external_url:url,
+                    version:ver,
+                    dev_log,
+                    contact_email
+                };
+                const {error} = await supabaseClient.from("demos")
+                    .update(updatePayload)
+                    .eq("id",editDemoId)
+                    .eq("user_id",currentUserId);
+                if(error) throw error;
+                alert("修改保存成功");
+                location.href="profile.html";
+            }catch(err){
+                alert("保存修改失败："+err.message);
+            }finally{
+                btnSubmit.disabled = false;
+            }
+        }
+        // 删除demo
+        async function handleDeleteDemo(){
+            if(!confirm("确认要彻底删除此游戏Demo吗？删除后不可恢复！")){
+                return;
+            }
+            const btnDelete = document.getElementById("btnDelete");
+            btnDelete.disabled = true;
+            try{
+                const {error} = await supabaseClient.from("demos")
+                    .delete()
+                    .eq("id",editDemoId)
+                    .eq("user_id",currentUserId);
+                if(error) throw error;
+                alert("已删除，即将跳转到个人中心");
+                location.href="profile.html";
+            }catch(err){
+                alert("删除失败："+err.message);
+            }finally{
+                btnDelete.disabled = false;
+            }
+        }
+    </script>
 </body>
 </html>
-
-
-
-
-

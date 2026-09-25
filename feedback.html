@@ -3,148 +3,230 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>用户反馈 - GameDemoShare</title>
+    <title>反馈与加入交流群 - GameDemoShare</title>
     <style>
         * {
             box-sizing: border-box;
             margin: 0;
             padding: 0;
-            font-family: system-ui, sans-serif;
+            font-family: -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
         }
         body {
-            background:#19192b;
-            color:#eeeeee;
-            max-width:720px;
-            margin: 24px auto;
-            padding:16px;
+            background: #f7f8fa;
+            color: #1f2937;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px 16px;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        main {
+            flex-grow: 1;
         }
         nav {
-            display:flex;
-            gap:24px;
-            margin-bottom:24px;
-            padding-bottom:10px;
-            border-bottom:1px solid #333550;
+            display: flex;
+            gap: 32px;
+            padding: 14px 20px;
+            margin-bottom: 32px;
+            border-radius: 10px;
+            background: rgba(255,255,255,0.88);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 1px 2px rgba(0,0,0,0.06),0 2px 8px rgba(0,0,0,0.04);
+            align-items: center;
         }
         nav a {
-            color:#aaa;
-            text-decoration:none;
+            color: #4b5563;
+            text-decoration: none;
+            font-size: 16px;
         }
-        nav a.active{
-            color:#48a8ff;
-            font-weight:bold;
+        nav a.active {
+            color: #1d4ed8;
+            font-weight: 600;
         }
-        h1{
-            font-size:24px;
-            margin-bottom:12px;
+        nav a:hover {
+            color: #1d4ed8;
         }
-        .tip{
-            font-size:13px;
-            color:#bbbbdd;
-            margin-bottom:20px;
+        .nav-user-area {
+            margin-left: auto;
         }
-        label{
-            display:block;
-            margin-top:12px;
+        h1 {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 8px;
+            color: #111827;
         }
-        input,textarea{
-            width:100%;
-            background:#222238;
-            border:1px solid #444470;
-            color:#fff;
-            padding:10px;
-            border-radius:6px;
-            font-size:15px;
-            margin:6px 0;
+        .tip {
+            font-size: 14px;
+            color: #6b7280;
+            margin-bottom: 24px;
+            line-height: 1.7;
         }
-        textarea{
-            min-height:180px;
-            resize:vertical;
+        .form-card {
+            background: #ffffff;
+            border-radius: 14px;
+            padding: 28px 24px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05),0 6px 18px rgba(0,0,0,0.06);
         }
-        button{
-            margin-top:16px;
-            padding:10px 16px;
-            border:none;
-            border-radius:6px;
-            cursor:pointer;
-            font-size:15px;
-            background:#247bdd;
-            color:white;
+        .form-item {
+            margin-bottom: 16px;
         }
-        button:disabled{
-            opacity:0.45;
-            cursor:not-allowed;
+        label {
+            display: block;
+            margin-bottom: 6px;
+            font-size: 14px;
+            color: #374151;
+            font-weight: 500;
+        }
+        input, textarea {
+            width: 100%;
+            padding: 12px 14px;
+            border: 1px solid #e5e7eb;
+            background: #ffffff;
+            color: #111827;
+            border-radius: 8px;
+            font-size: 15px;
+            transition: border-color 0.2s;
+        }
+        input:focus, textarea:focus {
+            outline: none;
+            border-color: #1d4ed8;
+        }
+        textarea {
+            min-height: 140px;
+            resize: vertical;
+        }
+        .btn-submit {
+            width: 100%;
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            background: #1d4ed8;
+            color: #fff;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background 0.2s;
+            margin-top: 8px;
+        }
+        .btn-submit:hover {
+            background: #1e40af;
+        }
+        .btn-submit:disabled {
+            opacity: 0.45;
+            cursor: not-allowed;
+        }
+        .tip-box {
+            background: #eff6ff;
+            border-radius: 8px;
+            padding: 12px 16px;
+            font-size: 13px;
+            color: #1e40af;
+            line-height: 1.7;
+            margin-bottom: 20px;
         }
         footer {
-            margin-top:40px;
-            padding-top:16px;
-            border-top:1px solid #333;
-            color:#888;
-            font-size:14px;
+            margin-top: 60px;
+            padding-top: 24px;
+            border-top: 1px solid #e5e7eb;
+            color: #6b7280;
+            font-size: 14px;
+        }
+        footer a {
+            color: #1d4ed8;
+            text-decoration: none;
         }
     </style>
 </head>
 <body>
     <nav>
         <a href="index.html">首页</a>
-        <a href="submit.html">发布</a>
-        <a href="ranking.html">排行榜</a>
-        <a href="feedback.html" class="active">反馈</a>
+        <a href="demo-list.html">可玩Demo</a>
+        <span class="nav-user-area" id="navUserBox"></span>
     </nav>
-    <h1>提交用户反馈</h1>
-    <div class="tip">遇到bug、建议、问题都可以在这里提交，站长会在后台查看。联系方式选填。</div>
-
-    <label>你的联系方式（选填，方便回复你）</label>
-    <input id="inputContact" placeholder="QQ / 邮箱 / 微信">
-
-    <label>反馈内容（必填）</label>
-    <textarea id="inputContent" placeholder="请详细描述你的问题或者建议..."></textarea>
-
-    <button id="btnSubmitFeedback">提交反馈</button>
-
+    <main>
+        <h1>反馈与加入交流群</h1>
+        <div class="tip">遇到Bug、有建议、想加入开发者交流群，都可以在这里留言。站长会在后台收到你的消息，手动拉你进群。</div>
+        
+        <div class="form-card">
+            <div class="tip-box">
+                💡 想加入交流群？在“联系方式”里填上你的微信号或QQ号，然后在“反馈内容”里写一句“申请加入交流群”，站长会尽快加你。
+            </div>
+            <div class="form-item">
+                <label>联系方式（微信 / QQ）</label>
+                <input type="text" id="inputContact" placeholder="选填，方便站长回复你">
+            </div>
+            <div class="form-item">
+                <label>反馈内容（必填）</label>
+                <textarea id="inputContent" placeholder="请详细描述你的问题、建议，或申请加入交流群..."></textarea>
+            </div>
+            <button class="btn-submit" id="btnSubmit">提交</button>
+        </div>
+    </main>
     <footer>
-        <div>© 2026 GameDemoShare</div>
+        <div>© 2026 GameDemoShare。仅存储外部链接，不上传游戏本体文件。</div>
     </footer>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script>
-const SUPABASEURL = "https://kczxtbmgigbfofdzkynm.supabase.co";
-const SUPABASEANONKEY = "sb_publishable_jiyD19NDY1DEc7jVFOQzaw_I-85Ncte";
-const { createClient } = window.supabase;
 
-// 改用var，就算意外重复声明也不会直接报错崩溃
-var supabase = createClient(SUPABASEURL, SUPABASEANONKEY);
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script>
+        const SUPABASE_URL = "https://kczxtbmgigbfofdzkynm.supabase.co";
+        const SUPABASE_ANON_KEY = "sb_publishable_jiyD19NDY1DEc7jVFOQzaw_I-85Ncte";
+        const { createClient } = window.supabase;
+        const client = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-const btn = document.querySelector("#btnSubmitFeedback");
-btn.onclick = async function(){
-    const contact = document.querySelector("#inputContact").value.trim();
-    const content = document.querySelector("#inputContent").value.trim();
-    if(!content){
-        alert("反馈内容不能为空！");
-        return;
-    }
-    btn.disabled = true;
-    btn.innerText = "提交中...";
-    try{
-        const {error} = await supabase.from("feedbacks").insert([{
-            contact: contact,
-            content: content
-        }]);
-        if(error){
-            alert("提交失败："+error.message);
-            btn.disabled = false;
-            btn.innerText = "提交反馈";
-            return;
+        const navUserBox = document.getElementById("navUserBox");
+        const inputContact = document.getElementById("inputContact");
+        const inputContent = document.getElementById("inputContent");
+        const btnSubmit = document.getElementById("btnSubmit");
+
+        // 判断登录状态
+        (async function init(){
+            try{
+                const {data:{user}} = await client.auth.getUser();
+                if(user){
+                    let displayName = user.user_metadata?.nickname;
+                    if(!displayName || !displayName.trim()){
+                        displayName = user.email?.includes("@") ? user.email.split("@")[0] : "用户";
+                    }
+                    navUserBox.innerHTML = `<a href="profile.html">👤 ${escapeHtml(displayName.trim())}</a>`;
+                }else{
+                    navUserBox.innerHTML = `<a href="login.html">登录 / 注册</a>`;
+                }
+            }catch(e){
+                navUserBox.innerHTML = `<a href="login.html">登录 / 注册</a>`;
+            }
+        })();
+
+        btnSubmit.onclick = async function(){
+            const contact = inputContact.value.trim();
+            const content = inputContent.value.trim();
+            if(!content){
+                alert("反馈内容不能为空");
+                return;
+            }
+            btnSubmit.disabled = true;
+            btnSubmit.innerText = "提交中…";
+            try{
+                const {error} = await client.from("feedbacks").insert([{
+                    contact: contact,
+                    content: content
+                }]);
+                if(error) throw error;
+                alert("✅ 已收到你的留言，站长会尽快联系你。");
+                inputContact.value = "";
+                inputContent.value = "";
+            }catch(e){
+                alert("提交失败：" + e.message);
+            }finally{
+                btnSubmit.disabled = false;
+                btnSubmit.innerText = "提交";
+            }
+        };
+
+        function escapeHtml(s){
+            if(!s) return "";
+            return s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
         }
-        alert("✅反馈已提交，感谢你的反馈！");
-        document.querySelector("#inputContact").value = "";
-        document.querySelector("#inputContent").value = "";
-    }catch(err){
-        alert("异常："+err.message);
-    }finally{
-        btn.disabled = false;
-        btn.innerText = "提交反馈";
-    }
-}
-</script>
-
+    </script>
 </body>
 </html>

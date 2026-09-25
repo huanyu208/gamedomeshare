@@ -1,0 +1,1047 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>个人中心 - GameDemoShare</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+        }
+        body {
+            background: #f7f8fa;
+            color: #1f2937;
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px 16px;
+            min-height: 100vh;
+        }
+        nav {
+            display:flex;
+            gap:32px;
+            padding:14px 20px;
+            margin-bottom:32px;
+            border-radius:10px;
+            background:rgba(255,255,255,0.88);
+            backdrop-filter: blur(10px);
+            box-shadow:0 1px 2px rgba(0,0,0,0.06),0 2px 8px rgba(0,0,0,0.04);
+            align-items:center;
+        }
+        nav a {
+            color:#4b5563;
+            text-decoration:none;
+            font-size:16px;
+        }
+        nav a:hover {
+            color:#1d4ed8;
+        }
+        .nav-user-area {
+            margin-left:auto;
+        }
+        .user-header{
+            display:flex;
+            gap:18px;
+            align-items:flex-start;
+            background:#ffffff;
+            border-radius:14px;
+            padding:28px 24px;
+            margin-bottom:24px;
+            position:relative;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05),0 6px 18px rgba(0,0,0,0.06);
+        }
+        .header-action-group{
+            margin-left:auto;
+            display:flex;
+            gap:10px;
+            flex-shrink:0;
+        }
+        .btn-header-action{
+            border:1px solid #1d4ed8;
+            background:#fff;
+            color:#1d4ed8;
+            padding:7px 12px;
+            border-radius:6px;
+            cursor:pointer;
+            font-size:14px;
+        }
+        .btn-header-action:hover{
+            background:#1d4ed8;
+            color:#fff;
+        }
+        .setting-dropdown-wrap{
+            position:relative;
+        }
+        .setting-menu{
+            position:absolute;
+            top:100%;
+            right:0;
+            background:#fff;
+            border:1px solid #e5e7eb;
+            border-radius:8px;
+            min-width:160px;
+            z-index:100;
+            display:none;
+            box-shadow:0 4px 14px rgba(0,0,0,0.08);
+        }
+        .setting-menu.show{
+            display:block;
+        }
+        .setting-menu-item{
+            padding:10px 14px;
+            cursor:pointer;
+            font-size:14px;
+        }
+        .setting-menu-item:hover{
+            background:#f3f4f6;
+        }
+        .avatar-circle{
+            width:72px;
+            height:72px;
+            border-radius:50%;
+            background:#1d4ed8;
+            color:#fff;
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            font-size:30px;
+            font-weight:bold;
+            flex-shrink:0;
+        }
+        .user-info{
+            flex:1;
+        }
+        .user-info h2{
+            margin-bottom:6px;
+            font-size:22px;
+            color:#111827;
+        }
+        .user-info p{
+            color:#6b7280;
+            font-size:14px;
+            line-height:1.6;
+        }
+        .wallet-block{
+            margin-top:10px;
+            padding:10px 12px;
+            background:#fefce8;
+            border-radius:8px;
+        }
+        .wallet-main{
+            font-size:16px;
+            font-weight:600;
+            color:#92400e;
+        }
+        .wallet-tip{
+            font-size:12px;
+            color:#78716c;
+            margin-top:4px;
+        }
+        .invite-code-tip{
+            margin-top:8px;
+            padding:8px 12px;
+            background:#eff6ff;
+            border-radius:8px;
+            font-size:14px;
+            color:#1e40af;
+            display:flex;
+            align-items:center;
+            gap:8px;
+            flex-wrap:wrap;
+        }
+        .invite-code-tip button{
+            margin-left:auto;
+            border:1px solid #1d4ed8;
+            background:#fff;
+            color:#1d4ed8;
+            padding:2px 8px;
+            border-radius:4px;
+            font-size:12px;
+            cursor:pointer;
+        }
+        .contact-line{
+            margin-top:8px;
+            padding:8px 12px;
+            background:#f0fdf4;
+            border-radius:8px;
+            font-size:14px;
+            color:#166534;
+            display:flex;
+            align-items:center;
+            gap:8px;
+            flex-wrap:wrap;
+        }
+        .contact-line .warning{
+            color:#b45309;
+            font-size:12px;
+        }
+        .contact-line button{
+            margin-left:auto;
+            border:1px solid #166534;
+            background:#fff;
+            color:#166534;
+            padding:2px 8px;
+            border-radius:4px;
+            font-size:12px;
+            cursor:pointer;
+        }
+        #headerAchievementBox{
+            width:100%;
+            margin-top:12px;
+            display:flex;
+            gap:8px;
+            flex-wrap:wrap;
+            align-items:center;
+        }
+        .ach-badge{
+            padding:4px 10px;
+            border-radius:20px;
+            background:#dbeafe;
+            color:#1d4ed8;
+            font-size:13px;
+            white-space:nowrap;
+        }
+        .ach-badge.grey{
+            opacity:0.4;
+        }
+        .modal-mask{
+            position:fixed;
+            inset:0;
+            background:rgba(0,0,0,0.45);
+            display:none;
+            z-index:200;
+            align-items:center;
+            justify-content:center;
+            padding:16px;
+        }
+        .modal-mask.show{
+            display:flex;
+        }
+        .modal-inner{
+            background:#fff;
+            border-radius:12px;
+            max-width:520px;
+            width:100%;
+            max-height:80vh;
+            overflow-y:auto;
+            padding:20px;
+        }
+        .modal-hd{
+            display:flex;
+            justify-content:space-between;
+            align-items:center;
+            margin-bottom:16px;
+        }
+        .modal-close{
+            cursor:pointer;
+            font-size:20px;
+        }
+        .modal-ach-item{
+            padding:12px 0;
+            border-bottom:1px solid #eee;
+        }
+        .modal-ach-item:last-child{
+            border-bottom:none;
+        }
+        .modal-ach-name{
+            font-weight:600;
+            font-size:15px;
+        }
+        .modal-ach-cond{
+            font-size:13px;
+            color:#666;
+            margin-top:2px;
+        }
+        .modal-ach-desc{
+            font-size:13px;
+            color:#444;
+            margin-top:4px;
+        }
+        .tab-bar{
+            display:flex;
+            border-bottom:1px solid #e5e7eb;
+            margin-bottom:20px;
+            flex-wrap:wrap;
+        }
+        .tab-btn{
+            padding:12px 20px;
+            background:transparent;
+            border:none;
+            cursor:pointer;
+            font-size:15px;
+            color:#4b5563;
+        }
+        .tab-btn.active{
+            border-bottom:2px solid #1d4ed8;
+            color:#1d4ed8;
+            font-weight:600;
+        }
+        .tab-panel{
+            display:none;
+        }
+        .tab-panel.show{
+            display:block;
+        }
+        .my-demo-item{
+            display:flex;
+            justify-content:space-between;
+            align-items:center;
+            background:#ffffff;
+            padding:16px 18px;
+            border-radius:10px;
+            margin-bottom:12px;
+            flex-wrap:wrap;
+            gap:10px;
+            box-shadow:0 1px 3px rgba(0,0,0,0.05),0 4px 12px rgba(0,0,0,0.05);
+        }
+        .btn-modify{
+            background:#1d4ed8;
+            color:#fff;
+            border:none;
+            padding:7px 12px;
+            border-radius:6px;
+            cursor:pointer;
+            margin-right:6px;
+        }
+        .btn-offline{
+            background:#d97706;
+            color:#fff;
+            border:none;
+            padding:7px 12px;
+            border-radius:6px;
+            cursor:pointer;
+            margin-right:6px;
+        }
+        .btn-del{
+            background:#dc2626;
+            color:#fff;
+            border:none;
+            padding:7px 12px;
+            border-radius:6px;
+            cursor:pointer;
+        }
+        .btn-accept{
+            background:#059669;
+            color:#fff;
+            border:none;
+            padding:5px 10px;
+            border-radius:6px;
+            cursor:pointer;
+            margin-right:6px;
+        }
+        .btn-reject{
+            background:#6b7280;
+            color:#fff;
+            border:none;
+            padding:5px 10px;
+            border-radius:6px;
+            cursor:pointer;
+        }
+        .friend-apply-item{
+            background:#fff;
+            padding:14px 16px;
+            border-radius:10px;
+            margin-bottom:10px;
+            box-shadow:0 1px 3px rgba(0,0,0,0.06);
+        }
+        .empty-tip{
+            padding:40px 0;
+            text-align:center;
+            color:#6b7280;
+        }
+        .status-tag{
+            font-size:12px;
+            padding:2px 8px;
+            border-radius:4px;
+            margin-left:8px;
+        }
+        .status-active{
+            background:#dbeafe;
+            color:#1d4ed8;
+        }
+        .status-inactive{
+            background:#fffbeb;
+            color:#d97706;
+        }
+        .my-comment-item{
+            padding:16px;
+            background:#ffffff;
+            border-radius:10px;
+            margin-bottom:12px;
+            box-shadow:0 1px 3px rgba(0,0,0,0.05),0 4px 12px rgba(0,0,0,0.05);
+        }
+        .cmt-meta{
+            font-size:13px;
+            color:#6b7280;
+            margin-bottom:6px;
+        }
+        footer {
+            margin-top:60px;
+            padding-top:24px;
+            border-top:1px solid #e5e7eb;
+            color:#6b7280;
+            font-size:14px;
+        }
+        @media(max-width:640px){
+            .user-header{
+                flex-direction:column;
+                align-items:flex-start;
+            }
+            .header-action-group{
+                margin-left:0;
+                margin-top:12px;
+            }
+            nav{
+                gap:18px;
+                padding:12px 14px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <nav>
+        <a href="index.html">首页</a>
+        <a href="demo-list.html">可玩Demo</a>
+        <span class="nav-user-area" id="navUserBox"></span>
+    </nav>
+    <div class="user-header">
+        <div class="avatar-circle" id="avatarBox"></div>
+        <div class="user-info">
+            <h2 id="dispNick">-</h2>
+            <p id="dispSysId"></p>
+            <p id="dispHighValue"></p>
+            <div class="contact-line">
+                <span>📞 联系方式：<span id="dispContact">未填写</span></span>
+                <span class="warning" id="contactWarning">（好友申请通过后需要交换联系方式，请尽快填写）</span>
+                <button id="btnEditContact">编辑</button>
+            </div>
+            <div class="wallet-block">
+                <div class="wallet-main">💰 累计虚拟收入：<span id="dispTotalEarn">0</span></div>
+                <div class="wallet-tip">当前为记账模式，平台产生收益并打通支付后即可提现</div>
+            </div>
+            <div class="invite-code-tip">
+                <span>🎁 你的邀请码：<span id="dispInviteCode">暂无</span></span>
+                <button id="btnFillInvite">填写别人的邀请码</button>
+            </div>
+            <div id="headerAchievementBox"></div>
+        </div>
+        <div class="header-action-group">
+            <button class="btn-header-action" id="btnMsg">📨 私信</button>
+            <button class="btn-header-action" id="btnAchModal">🏆 查看条件</button>
+            <div class="setting-dropdown-wrap">
+                <button class="btn-header-action" id="btnSetting">⚙️ 设置</button>
+                <div class="setting-menu" id="settingMenu">
+                    <div class="setting-menu-item" data-action="pwd">修改密码</div>
+                    <div class="setting-menu-item" data-action="editProfile">编辑资料</div>
+                    <div class="setting-menu-item" data-action="contact">编辑联系方式</div>
+                    <div class="setting-menu-item" data-action="about">关于</div>
+                    <div class="setting-menu-item" data-action="tutorial">教学</div>
+                    <div class="setting-menu-item" data-action="feedback">反馈</div>
+                    <div class="setting-menu-item" data-action="logout">注销账号</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal-mask" id="achModalMask">
+        <div class="modal-inner">
+            <div class="modal-hd">
+                <h3>全部荣誉条件</h3>
+                <span class="modal-close" id="closeAchModal">×</span>
+            </div>
+            <div id="modalAchList"></div>
+        </div>
+    </div>
+    <div class="tab-bar">
+        <button class="tab-btn active" data-tab="tab-mydemo">我发布的</button>
+        <button class="tab-btn" data-tab="tab-mycomment">我评论的</button>
+        <button class="tab-btn" data-tab="tab-mylike">我收藏的</button>
+        <button class="tab-btn" data-tab="tab-ach">🏆 荣誉墙</button>
+        <button class="tab-btn" data-tab="tab-friend">📨 好友申请</button>
+    </div>
+    <div class="tab-panel show" id="tab-mydemo">
+        <div id="myDemoWrap">加载中…</div>
+    </div>
+    <div class="tab-panel" id="tab-mycomment">
+        <div id="myCommentWrap">加载中…</div>
+    </div>
+    <div class="tab-panel" id="tab-mylike">
+        <div class="empty-tip">暂无收藏</div>
+    </div>
+    <div class="tab-panel" id="tab-ach">
+        <div id="tabAchWrap">加载中…</div>
+    </div>
+    <div class="tab-panel" id="tab-friend">
+        <div id="tabFriendWrap">加载中…</div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script>
+        const SUPABASE_URL = "https://kczxtbmgigbfofdzkynm.supabase.co";
+        const SUPABASE_ANON_KEY = "sb_publishable_jiyD19NDY1DEc7jVFOQzaw_I-85Ncte";
+        const { createClient } = window.supabase;
+        const client = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        let currentUserId = null;
+        let userProfile = null;
+        let cachedAchievements = [];
+        let statDemoCount = 0;
+        let statCommentCount = 0;
+
+        const avatarBox = document.getElementById("avatarBox");
+        const dispNick = document.getElementById("dispNick");
+        const dispSysId = document.getElementById("dispSysId");
+        const dispHighValue = document.getElementById("dispHighValue");
+        const dispContact = document.getElementById("dispContact");
+        const contactWarning = document.getElementById("contactWarning");
+        const dispTotalEarn = document.getElementById("dispTotalEarn");
+        const dispInviteCode = document.getElementById("dispInviteCode");
+        const navUserBox = document.getElementById("navUserBox");
+        const myDemoWrap = document.getElementById("myDemoWrap");
+        const myCommentWrap = document.getElementById("myCommentWrap");
+        const headerAchievementBox = document.getElementById("headerAchievementBox");
+        const btnAchModal = document.getElementById("btnAchModal");
+        const achModalMask = document.getElementById("achModalMask");
+        const closeAchModal = document.getElementById("closeAchModal");
+        const modalAchList = document.getElementById("modalAchList");
+        const btnMsg = document.getElementById("btnMsg");
+        const btnSetting = document.getElementById("btnSetting");
+        const settingMenu = document.getElementById("settingMenu");
+        const tabAchWrap = document.getElementById("tabAchWrap");
+        const tabFriendWrap = document.getElementById("tabFriendWrap");
+        const btnEditContact = document.getElementById("btnEditContact");
+        const btnFillInvite = document.getElementById("btnFillInvite");
+
+        function escapeHtml(s){
+            if(!s) return "";
+            return s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
+        }
+
+        function buildDisplayIdByOrder(orderNum){
+            const num = Number(orderNum||0);
+            if(num <=0) return null;
+            return "GDS-" + String(num).padStart(5,"0");
+        }
+        function getTimeStamp5(){
+            const ts = Date.now().toString();
+            return ts.slice(-5);
+        }
+
+        function getReadableCondition(type, value){
+            const cv = Number(value||0);
+            switch(type){
+                case "registration_order":
+                    return `注册名次 ≤ ${cv}`;
+                case "demo_count":
+                    return `发布Demo数 ≥ ${cv}`;
+                case "comment_count":
+                    return `评论总数 ≥ ${cv}`;
+                case "approved_count":
+                    return `高价值评论 ≥ ${cv}`;
+                default:
+                    return `条件类型:${type}，阈值:${cv}`;
+            }
+        }
+
+        (async function init(){
+            try{
+                const {data:{user}} = await client.auth.getUser();
+                if(!user){
+                    navUserBox.innerHTML = `<a href="login.html">登录 / 注册</a>`;
+                    window.location.href = "login.html";
+                    return;
+                }
+                currentUserId = user.id;
+                let displayName = user.user_metadata?.nickname;
+                if(!displayName || !displayName.trim()){
+                    displayName = user.email?.includes("@") ? user.email.split("@")[0] : "用户"+Math.floor(Math.random()*900000+100000);
+                }
+                navUserBox.innerHTML = `<a href="profile.html">👤 ${escapeHtml(displayName.trim())}</a>`;
+
+                await refreshUserProfileView();
+
+                bindHeaderActions();
+                bindTabSwitch();
+                bindAchievementModal();
+
+                const {count:demoCnt} = await client.from("demos").select("id",{count:"exact",head:true}).eq("user_id",currentUserId);
+                statDemoCount = demoCnt||0;
+                const {count:cmtCnt} = await client.from("comments").select("id",{count:"exact",head:true}).eq("user_id",currentUserId);
+                statCommentCount = cmtCnt||0;
+
+                await loadMyDemos();
+                await loadMyComments();
+                await loadAchievements();
+            }catch(err){
+                console.error(err);
+            }
+        })();
+
+        async function refreshUserProfileView(){
+            let {data:prof,error:profErr} = await client.from("profiles").select("*").eq("id", currentUserId).maybeSingle();
+            if(profErr) throw profErr;
+            if(!prof) prof = {};
+            userProfile = prof;
+
+            // 系统ID逻辑
+            let finalDisplayId = prof.display_id;
+            if(!finalDisplayId || !finalDisplayId.trim()){
+                const fromOrder = buildDisplayIdByOrder(prof.registration_order);
+                if(fromOrder){
+                    finalDisplayId = fromOrder;
+                }else{
+                    finalDisplayId = "GDS-" + getTimeStamp5();
+                }
+            }
+            let nick = prof.nickname?.trim() || "用户";
+            dispNick.innerText = nick;
+            dispSysId.innerText = `系统ID：${escapeHtml(finalDisplayId)}`;
+
+            // 高价值数
+            const highVal = Number(prof.high_value_count || 0);
+            dispHighValue.innerText = `获得开发者认可：${highVal} 条`;
+
+            // 联系方式
+            const contactText = prof.contact_info && prof.contact_info.trim();
+            if(contactText){
+                dispContact.innerText = escapeHtml(contactText);
+                contactWarning.style.display = "none";
+            }else{
+                dispContact.innerText = "未填写";
+                contactWarning.style.display = "inline";
+            }
+
+            // 邀请码自动生成
+            let myInviteCode = prof.invite_code;
+            if(!myInviteCode || !myInviteCode.trim()){
+                myInviteCode = "GDS-" + Math.floor(100000 + Math.random()*900000);
+                try{
+                    await client.from("profiles").update({invite_code: myInviteCode}).eq("id", currentUserId);
+                    prof.invite_code = myInviteCode;
+                }catch(e){
+                    console.warn("生成邀请码失败：", e);
+                }
+            }
+            dispInviteCode.innerText = escapeHtml(myInviteCode);
+
+            dispTotalEarn.innerText = Number(prof.total_earned||0).toFixed(2);
+            avatarBox.innerText = (nick[0]||"U").toUpperCase();
+        }
+
+        function bindHeaderActions(){
+            btnMsg.onclick = ()=>{
+                alert("私信功能开发中，请先通过好友申请交换联系方式");
+            };
+            btnSetting.onclick = (e)=>{
+                e.stopPropagation();
+                settingMenu.classList.toggle("show");
+            };
+            document.addEventListener("click",()=>{
+                settingMenu.classList.remove("show");
+            });
+            document.querySelectorAll(".setting-menu-item").forEach(item=>{
+                item.onclick = async (e)=>{
+                    e.stopPropagation();
+                    settingMenu.classList.remove("show");
+                    const act = item.dataset.action;
+                    switch(act){
+                        case "pwd":{
+                            const newPwd = prompt("请输入新密码：");
+                            if(!newPwd) return;
+                            try{
+                                const {error} = await client.auth.updateUser({password:newPwd});
+                                if(error) throw error;
+                                alert("密码修改成功");
+                            }catch(ex){
+                                alert("修改密码失败："+ex.message);
+                            }
+                            break;
+                        }
+                        case "editProfile":{
+                            const newNick = prompt("编辑昵称：", userProfile.nickname||"");
+                            if(newNick === null) return;
+                            const newBio = prompt("编辑个人简介(bio)：", userProfile.bio||"");
+                            if(!newNick.trim()){
+                                alert("昵称不能为空");
+                                return;
+                            }
+                            try{
+                                const {error} = await client.from("profiles").update({
+                                    nickname: newNick.trim(),
+                                    bio: (newBio||"").trim()
+                                }).eq("id",currentUserId);
+                                if(error) throw error;
+                                alert("资料保存成功");
+                                await refreshUserProfileView();
+                            }catch(ex){
+                                alert("保存资料失败："+ex.message);
+                            }
+                            break;
+                        }
+                        case "contact":{
+                            editContactInfo();
+                            break;
+                        }
+                        case "about":{
+                            alert("GameDemoShare 是一个面向独立游戏开发者的原型验证平台。");
+                            break;
+                        }
+                        case "tutorial":{
+                            alert("点击发布 -> 填入游戏链接 -> 提交后生成Demo码，其他玩家凭Demo码体验你的作品。");
+                            break;
+                        }
+                        case "feedback":{
+                            window.location.href = "feedback.html";
+                            break;
+                        }
+                        case "logout":{
+                            if(!confirm("确认要注销登录吗？")) return;
+                            await client.auth.signOut();
+                            localStorage.clear();
+                            sessionStorage.clear();
+                            window.location.href = "index.html";
+                            break;
+                        }
+                    }
+                }
+            });
+
+            // 编辑联系方式
+            btnEditContact.onclick = editContactInfo;
+
+            // 填写别人的邀请码
+            btnFillInvite.onclick = async ()=>{
+                if(userProfile.invited_by){
+                    alert("你已经绑定过邀请人了，不能重复绑定。");
+                    return;
+                }
+                const code = prompt("请输入邀请人的邀请码（格式：GDS-XXXXXX）：");
+                if(!code || !code.trim()) return;
+                const targetCode = code.trim();
+                try{
+                    const {data:inviter,error:findErr} = await client.from("profiles")
+                        .select("id, invite_valid_count")
+                        .eq("invite_code", targetCode)
+                        .maybeSingle();
+                    if(findErr) throw findErr;
+                    if(!inviter || !inviter.id){
+                        alert("邀请码无效，请核对后再试。");
+                        return;
+                    }
+                    if(inviter.id === currentUserId){
+                        alert("不能填写自己的邀请码。");
+                        return;
+                    }
+                    // 绑定邀请人
+                    const {error:updErr} = await client.from("profiles")
+                        .update({invited_by: inviter.id})
+                        .eq("id", currentUserId);
+                    if(updErr) throw updErr;
+                    // 邀请人有效邀请数 +1
+                    const currentCount = Number(inviter.invite_valid_count||0);
+                    await client.from("profiles")
+                        .update({invite_valid_count: currentCount + 1})
+                        .eq("id", inviter.id);
+
+                    userProfile.invited_by = inviter.id;
+                    alert("✅邀请码绑定成功！感谢你支持该邀请人。");
+                }catch(e){
+                    alert("绑定失败："+e.message);
+                }
+            };
+        }
+
+        async function editContactInfo(){
+            const val = prompt("编辑联系方式（微信/QQ）：", userProfile.contact_info||"");
+            if(val === null) return;
+            try{
+                const {error} = await client.from("profiles").update({contact_info:val.trim()}).eq("id",currentUserId);
+                if(error) throw error;
+                userProfile.contact_info = val.trim();
+                await refreshUserProfileView();
+                alert("联系方式保存成功");
+            }catch(ex){
+                alert("保存失败："+ex.message);
+            }
+        }
+
+        function bindAchievementModal(){
+            btnAchModal.onclick = ()=>{
+                renderAchModalContent();
+                achModalMask.classList.add("show");
+            };
+            closeAchModal.onclick = ()=>{
+                achModalMask.classList.remove("show");
+            };
+            achModalMask.onclick = (e)=>{
+                if(e.target === achModalMask){
+                    achModalMask.classList.remove("show");
+                }
+            }
+        }
+        function renderAchModalContent(){
+            if(!cachedAchievements || cachedAchievements.length===0){
+                modalAchList.innerHTML = "<div class='empty-tip'>暂无荣誉配置</div>";
+                return;
+            }
+            let html = "";
+            cachedAchievements.forEach(ach=>{
+                const condText = getReadableCondition(ach.condition_type, ach.condition_value);
+                html += `
+                <div class="modal-ach-item">
+                    <div class="modal-ach-name">${escapeHtml(ach.name||"")}</div>
+                    <div class="modal-ach-cond">解锁条件：${escapeHtml(condText)}</div>
+                    <div class="modal-ach-desc">${escapeHtml(ach.description||"")}</div>
+                </div>
+                `;
+            });
+            modalAchList.innerHTML = html;
+        }
+
+        function bindTabSwitch(){
+            document.querySelectorAll(".tab-btn").forEach(btn=>{
+                btn.onclick = async function(){
+                    document.querySelectorAll(".tab-btn").forEach(b=>b.classList.remove("active"));
+                    document.querySelectorAll(".tab-panel").forEach(p=>p.classList.remove("show"));
+                    this.classList.add("active");
+                    const tid = this.dataset.tab;
+                    document.getElementById(tid).classList.add("show");
+                    if(tid === "tab-ach") await renderAchievementTab();
+                    if(tid === "tab-friend") await loadFriendApplyList();
+                }
+            })
+        }
+
+        async function loadMyDemos(){
+            try{
+                const {data:demos,error} = await client.from("demos").select("*").eq("user_id",currentUserId).order("created_at",{ascending:false});
+                if(error) throw error;
+                if(!demos || demos.length===0){
+                    myDemoWrap.innerHTML = `<div class="empty-tip">你还没有发布任何Demo</div>`;
+                    return;
+                }
+                let html = "";
+                demos.forEach(d=>{
+                    let statusText, statusClass, offlineBtnText;
+                    if(d.status === "active"){
+                        statusText = "上架";
+                        statusClass = "status-active";
+                        offlineBtnText = "下架";
+                    }else{
+                        statusText = "下架";
+                        statusClass = "status-inactive";
+                        offlineBtnText = "重新上架";
+                    }
+                    html += `
+                    <div class="my-demo-item">
+                        <div>
+                            ${escapeHtml(d.name||"未命名")}
+                            <span class="status-tag ${statusClass}">[${statusText}]</span>
+                        </div>
+                        <div>
+                            <button class="btn-modify" onclick="goModify('${d.id}')">修改</button>
+                            <button class="btn-offline" onclick="offlineDemo('${d.id}','${d.status}')">${offlineBtnText}</button>
+                            <button class="btn-del" onclick="delDemo('${d.id}')">删除</button>
+                        </div>
+                    </div>`;
+                });
+                myDemoWrap.innerHTML = html;
+            }catch(err){
+                myDemoWrap.innerHTML = `<div class="empty-tip">读取我的Demo失败：${escapeHtml(err.message)}</div>`;
+            }
+        }
+
+        async function loadMyComments(){
+            try{
+                const {data:cmts,error} = await client.from("comments")
+                    .select("*,demos(name)")
+                    .eq("user_id",currentUserId)
+                    .order("created_at",{ascending:false});
+                if(error) throw error;
+                if(!cmts||cmts.length===0){
+                    myCommentWrap.innerHTML = `<div class="empty-tip">暂无我的评论记录</div>`;
+                    return;
+                }
+                let html = "";
+                cmts.forEach(c=>{
+                    const demoName = c.demos?.name || "已删除Demo";
+                    html += `
+                    <div class="my-comment-item">
+                        <div class="cmt-meta">Demo：${escapeHtml(demoName)}｜${new Date(c.created_at).toLocaleString()}｜⭐${c.star}星</div>
+                        <div>${escapeHtml(c.content||"")}</div>
+                    </div>
+                    `
+                })
+                myCommentWrap.innerHTML = html;
+            }catch(err){
+                myCommentWrap.innerHTML = `<div class="empty-tip">读取评论失败：${escapeHtml(err.message)}</div>`;
+            }
+        }
+
+        async function loadAchievements(){
+            try{
+                const {data:achList,error:achErr} = await client.from("achievements").select("*").eq("enabled",true);
+                if(achErr) throw achErr;
+                cachedAchievements = achList||[];
+                if(!achList || achList.length===0){
+                    headerAchievementBox.innerHTML = `<span style="color:#888;font-size:13px;">暂无荣誉</span>`;
+                    return;
+                }
+                let html = "";
+                achList.forEach(ach=>{
+                    let ok = checkAchUnlock(ach);
+                    const cls = ok ? "ach-badge" : "ach-badge grey";
+                    html += `<span class="${cls}">🏆 ${escapeHtml(ach.name||"")}</span>`;
+                });
+                headerAchievementBox.innerHTML = html;
+            }catch(e){
+                headerAchievementBox.innerHTML = `<span style="color:#888;font-size:13px;">荣誉读取失败</span>`;
+            }
+        }
+
+        function checkAchUnlock(ach){
+            const cv = Number(ach.condition_value||0);
+            const regOrder = Number(userProfile.registration_order||0);
+            const approvedCount = Number(userProfile.high_value_count||0);
+            switch(ach.condition_type){
+                case "registration_order":
+                    return regOrder>0 && regOrder <= cv;
+                case "demo_count":
+                    return statDemoCount >= cv;
+                case "comment_count":
+                    return statCommentCount >= cv;
+                case "approved_count":
+                    return approvedCount >= cv;
+                default:
+                    return false;
+            }
+        }
+
+        async function renderAchievementTab(){
+            if(!cachedAchievements || cachedAchievements.length===0){
+                tabAchWrap.innerHTML = `<div class="empty-tip">暂无荣誉配置</div>`;
+                return;
+            }
+            let html = "";
+            cachedAchievements.forEach(ach=>{
+                const unlocked = checkAchUnlock(ach);
+                const condText = getReadableCondition(ach.condition_type, ach.condition_value);
+                const statusText = unlocked ? "✅已解锁" : "❌未解锁";
+                const clrStyle = unlocked ? "" : "opacity:0.5;";
+                html += `
+                <div class="modal-ach-item" style="${clrStyle}">
+                    <div class="modal-ach-name">🏆 ${escapeHtml(ach.name||"")} ${statusText}</div>
+                    <div class="modal-ach-cond">解锁条件：${escapeHtml(condText)}</div>
+                    <div class="modal-ach-desc">${escapeHtml(ach.description||"")}</div>
+                </div>
+                `;
+            });
+            tabAchWrap.innerHTML = html;
+        }
+
+        async function loadFriendApplyList(){
+            try{
+                const {data:applies,error} = await client.from("friendships")
+                    .select("*")
+                    .eq("friend_id",currentUserId)
+                    .eq("status","pending");
+                if(error) throw error;
+                if(!applies||applies.length===0){
+                    tabFriendWrap.innerHTML = `<div class="empty-tip">暂无待处理好友申请</div>`;
+                    return;
+                }
+                const applicantIds = applies.map(ap=>ap.user_id).filter(uid=>uid);
+                const {data:profilesArr} = await client.from("profiles").select("id,nickname,contact_info").in("id",applicantIds);
+                const profileMap = {};
+                if(profilesArr){
+                    profilesArr.forEach(p=>{ profileMap[p.id] = p; });
+                }
+                let html = "";
+                applies.forEach(ap=>{
+                    const profile = profileMap[ap.user_id] || {};
+                    const applyNick = escapeHtml(profile.nickname||"匿名用户");
+                    const applyMsg = escapeHtml(ap.apply_msg||"无留言");
+                    html += `
+                    <div class="friend-apply-item">
+                        <div><b>申请人：${applyNick}</b></div>
+                        <div style="margin:4px 0;font-size:14px;">留言：${applyMsg}</div>
+                        <div style="margin-top:8px;">
+                            <button class="btn-accept" data-fid="${ap.id}" data-applyuid="${ap.user_id}">同意</button>
+                            <button class="btn-reject" data-fid="${ap.id}">拒绝</button>
+                        </div>
+                    </div>`;
+                });
+                tabFriendWrap.innerHTML = html;
+                document.querySelectorAll(".btn-accept").forEach(btn=>{
+                    btn.onclick = async ()=>{
+                        const fid = btn.dataset.fid;
+                        const applyUid = btn.dataset.applyuid;
+                        await acceptFriendApply(fid, applyUid);
+                    }
+                });
+                document.querySelectorAll(".btn-reject").forEach(btn=>{
+                    btn.onclick = async ()=>{
+                        const fid = btn.dataset.fid;
+                        await rejectFriendApply(fid);
+                    }
+                })
+            }catch(e){
+                tabFriendWrap.innerHTML = `<div class="empty-tip">读取好友申请失败：${escapeHtml(e.message)}</div>`;
+            }
+        }
+
+        async function acceptFriendApply(applyId, applyUserId){
+            try{
+                await client.from("friendships").update({status:"accepted"}).eq("id",applyId);
+                const {data:meProf} = await client.from("profiles").select("contact_info").eq("id",currentUserId).maybeSingle();
+                const {data:otherProf} = await client.from("profiles").select("contact_info").eq("id",applyUserId).maybeSingle();
+                const myContact = (meProf?.contact_info||"").trim();
+                const otherContact = (otherProf?.contact_info||"").trim();
+
+                if(!myContact || !otherContact){
+                    alert(`好友申请已同意！\n但你或对方有一方尚未填写联系方式。\n请先去个人中心填写微信/QQ，才能继续交流。`);
+                }else{
+                    alert(`已同意好友申请！\n你的联系方式：${myContact}\n对方联系方式：${otherContact}\n请添加对方微信/QQ进行交流`);
+                }
+                await loadFriendApplyList();
+            }catch(ex){
+                alert("处理申请失败："+ex.message);
+            }
+        }
+        async function rejectFriendApply(applyId){
+            if(!confirm("确定拒绝该好友申请？")) return;
+            try{
+                await client.from("friendships").delete().eq("id",applyId);
+                await loadFriendApplyList();
+            }catch(ex){
+                alert("拒绝失败："+ex.message);
+            }
+        }
+
+        window.goModify = function(demoId){
+            window.location.href = `submit.html?id=${demoId}`;
+        };
+        window.offlineDemo = async function(demoId,curStatus){
+            if(!confirm(curStatus==="active"?"确定要下架该Demo吗？":"确定要重新上架该Demo吗？")) return;
+            try{
+                const newSt = curStatus === "active" ? "inactive" : "active";
+                const {error} = await client.from("demos").update({status:newSt}).eq("id",demoId).eq("user_id",currentUserId);
+                if(error) throw error;
+                await loadMyDemos();
+            }catch(e){
+                alert("操作失败："+e.message);
+            }
+        };
+        window.delDemo = async function(demoId){
+            if(!confirm("⚠️确认彻底删除，不可恢复！")) return;
+            try{
+                const {error} = await client.from("demos").delete().eq("id",demoId).eq("user_id",currentUserId);
+                if(error) throw error;
+                await loadMyDemos();
+            }catch(e){
+                alert("删除失败："+e.message);
+            }
+        };
+    </script>
+</body>
+</html>

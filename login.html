@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>登录 - GameDemoShare</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: system-ui, sans-serif;
+        }
+        body {
+            background: #ffffff;
+            color: #111111;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 16px;
+        }
+        .login-card {
+            width: 100%;
+            max-width: 420px;
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 32px 28px;
+        }
+        .login-card h2 {
+            text-align: center;
+            margin-bottom: 24px;
+            color: #111111;
+        }
+        .form-item {
+            margin-bottom: 16px;
+        }
+        label {
+            display: block;
+            margin-bottom: 6px;
+            color: #333333;
+        }
+        input {
+            width: 100%;
+            padding: 12px 14px;
+            border: 1px solid #e0e0e0;
+            background: #ffffff;
+            color: #111111;
+            border-radius: 6px;
+            font-size: 15px;
+        }
+        input:focus {
+            outline: none;
+            border-color: #1677ff;
+        }
+        .tip-text {
+            font-size: 14px;
+            margin: 8px 0;
+            min-height:20px;
+        }
+        .error {
+            color: #ff4d4f;
+        }
+        .success {
+            color:#00b42a;
+        }
+        .btn-primary {
+            width:100%;
+            padding:12px;
+            background:#1677ff;
+            color:#ffffff;
+            border:none;
+            border-radius:6px;
+            font-size:16px;
+            cursor:pointer;
+        }
+        .btn-primary:disabled {
+            opacity:0.45;
+            cursor:not-allowed;
+        }
+        .link-row {
+            margin-top:20px;
+            text-align:center;
+            font-size:14px;
+            color:#888888;
+        }
+        .link-row a {
+            color:#1677ff;
+            text-decoration:none;
+        }
+    </style>
+</head>
+<body>
+<div class="login-card">
+    <h2>账号登录</h2>
+    <div class="form-item">
+        <label>邮箱</label>
+        <input type="email" id="emailInput" placeholder="请输入注册邮箱">
+    </div>
+    <div class="form-item">
+        <label>密码</label>
+        <input type="password" id="pwdInput" placeholder="请输入密码">
+    </div>
+    <div id="tipBox" class="tip-text"></div>
+    <button class="btn-primary" id="loginBtn">登录</button>
+    <div class="link-row">
+        还没有账号？<a href="register.html">前往注册</a>
+        <br>
+        <a href="javascript:void(0)" id="forgetPwdLink">忘记密码？</a>
+        <br>
+        <a href="index.html">返回首页</a>
+    </div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+    const SUPABASE_URL = "https://kczxtbmgigbfofdzkynm.supabase.co";
+    const SUPABASE_ANON_KEY = "sb_publishable_jiyD19NDY1DEc7jVFOQzaw_I-85Ncte";
+    const { createClient } = window.supabase;
+    const client = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    const emailInput = document.getElementById("emailInput");
+    const pwdInput = document.getElementById("pwdInput");
+    const loginBtn = document.getElementById("loginBtn");
+    const tipBox = document.getElementById("tipBox");
+    const forgetPwdLink = document.getElementById("forgetPwdLink");
+
+    loginBtn.onclick = async function () {
+        tipBox.className = "tip-text";
+        tipBox.innerText = "";
+        const email = emailInput.value.trim();
+        const password = pwdInput.value;
+        if (!email || !password) {
+            tipBox.innerText = "请填写邮箱和密码";
+            tipBox.classList.add("error");
+            return;
+        }
+        loginBtn.disabled = true;
+        loginBtn.innerText = "登录中…";
+        try {
+            const { error } = await client.auth.signInWithPassword({ email, password });
+            if (error) throw error;
+            tipBox.innerText = "登录成功，正在跳转首页";
+            tipBox.classList.add("success");
+            setTimeout(() => {
+                window.location.href = "index.html";
+            }, 600);
+        } catch (err) {
+            let friendlyMsg = err.message;
+            if (friendlyMsg.includes("Invalid login credentials")) friendlyMsg = "邮箱或密码错误";
+            if (friendlyMsg.includes("Email not confirmed")) friendlyMsg = "邮箱尚未验证，请去邮箱查收验证邮件";
+            tipBox.innerText = "登录失败：" + friendlyMsg;
+            tipBox.classList.add("error");
+        } finally {
+            loginBtn.disabled = false;
+            loginBtn.innerText = "登录";
+        }
+    };
+
+    // 忘记密码：发送重置邮件
+    forgetPwdLink.onclick = async function(){
+        const inputEmail = prompt("请输入你的注册邮箱，将接收密码重置邮件：");
+        if(!inputEmail || !inputEmail.trim()) return;
+        const email = inputEmail.trim();
+        try{
+            // ⚠️Supabase后台Auth设置：密码重置跳转URL填写为 reset‑password.html
+            const {error} = await client.auth.resetPasswordForEmail(email, {
+                redirectTo: window.location.origin + "/reset-password.html"
+            });
+            if(error) throw error;
+            alert("密码重置邮件已发送，请前往邮箱查收。");
+        }catch(err){
+            alert("发送重置邮件失败：" + err.message);
+        }
+    }
+</script>
+</body>
+</html>

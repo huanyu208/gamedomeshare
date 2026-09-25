@@ -1,0 +1,578 @@
+
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>可玩Demo - GameDemoShare</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: system-ui, sans-serif;
+        }
+        body {
+            background: #ffffff;
+            color: #111111;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 16px;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        main {
+            flex-grow: 1;
+        }
+        nav {
+            display: flex;
+            gap: 28px;
+            padding: 12px 0;
+            margin-bottom: 24px;
+            border-bottom: 1px solid #e0e0e0;
+            align-items: center;
+        }
+        nav a {
+            color: #333333;
+            text-decoration: none;
+            font-size: 16px;
+        }
+        nav a.active {
+            color: #1677ff;
+            font-weight: bold;
+        }
+        nav a:hover {
+            color: #1677ff;
+        }
+        .nav-user-area {
+            margin-left: auto;
+        }
+        /* ========== 顶部搜索栏 + 右侧发布按钮 ========== */
+        .top-bar-wrap{
+            display:flex;
+            gap:16px;
+            align-items:center;
+            margin-bottom:28px;
+            flex-wrap:wrap;
+        }
+        .search-filter-area{
+            flex:1;
+            display:flex;
+            gap:12px;
+            align-items:center;
+            flex-wrap:wrap;
+        }
+        #searchInput {
+            padding:10px 14px;
+            border:1px solid #e0e0e0;
+            border-radius:8px;
+            background:#fff;
+            color:#111;
+            font-size:15px;
+            min-width:260px;
+        }
+        .btn-publish-top{
+            background:#1677ff;
+            color:#fff;
+            border:none;
+            padding:9px 18px;
+            border-radius:6px;
+            cursor:pointer;
+            font-size:15px;
+            white-space:nowrap;
+        }
+        /* ========== 分类区域组件 ========== */
+        .section-block{
+            margin-bottom:36px;
+        }
+        .section-header{
+            display:flex;
+            justify-content:space-between;
+            align-items:center;
+            margin-bottom:14px;
+        }
+        .section-title{
+            font-size:19px;
+            font-weight:bold;
+            color:#111;
+        }
+        .section-btn-group{
+            display:flex;
+            gap:10px;
+        }
+        .sec-btn{
+            border:1px solid #1677ff;
+            background:#ffffff;
+            color:#1677ff;
+            padding:5px 12px;
+            border-radius:5px;
+            cursor:pointer;
+            font-size:14px;
+        }
+        .sec-btn:hover{
+            background:#1677ff;
+            color:#fff;
+        }
+        .section-card-row{
+            display:grid;
+            grid-template-columns: repeat(auto-fill, minmax(240px,1fr));
+            gap:18px;
+        }
+        /* Demo卡片 */
+        .demo-card{
+            background:#f8f9fa;
+            border-radius:10px;
+            overflow:hidden;
+            cursor: pointer;
+            transition: 0.15s;
+        }
+        .demo-card:hover{
+            box-shadow:0 2px 8px rgba(0,0,0,0.08);
+        }
+        .card-cover-placeholder{
+            height:130px;
+            background:#dde3eb;
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            color:#888;
+            font-size:14px;
+        }
+        .card-body{
+            padding:14px;
+        }
+        .card-title-row{
+            display:flex;
+            align-items:center;
+            gap:6px;
+            margin-bottom:6px;
+        }
+        .card-title{
+            font-size:16px;
+            font-weight:bold;
+            color:#111;
+        }
+        .tag-official{
+            display:inline-block;
+            background:#1677ff;
+            color:#fff;
+            font-size:11px;
+            padding:1px 5px;
+            border-radius:3px;
+            flex-shrink:0;
+        }
+        .dev-name{
+            font-size:13px;
+            color:#888;
+            margin-bottom:6px;
+        }
+        .tag-wrap{
+            margin:6px 0;
+        }
+        .tag{
+            display:inline-block;
+            background:#e8edf4;
+            color:#1677ff;
+            padding:2px 6px;
+            border-radius:4px;
+            font-size:11px;
+            margin-right:3px;
+            margin-bottom:3px;
+        }
+        .card-meta-row{
+            font-size:13px;
+            color:#444;
+            display:flex;
+            gap:10px;
+            flex-wrap:wrap;
+        }
+        .empty-sec-tip{
+            padding:24px 0;
+            text-align:center;
+            color:#888;
+        }
+        footer {
+            margin-top:48px;
+            padding-top:16px;
+            border-top:1px solid #e0e0e0;
+            color:#888888;
+            font-size:14px;
+        }
+        @media(max-width:768px){
+            nav{gap:14px;}
+            .section-card-row{grid-template-columns:1fr;}
+            .top-bar-wrap{flex-direction:column;align-items:stretch;}
+        }
+    </style>
+</head>
+<body>
+    <nav>
+        <a href="index.html">首页</a>
+        <a href="demo-list.html" class="active">可玩Demo</a>
+        <span class="nav-user-area" id="navUserBox">
+            <a href="login.html">登录 / 注册</a>
+        </span>
+    </nav>
+    <main>
+        <!-- 顶部搜索+发布按钮 -->
+        <div class="top-bar-wrap">
+            <div class="search-filter-area">
+                <input id="searchInput" placeholder="搜索Demo名称、标签…">
+            </div>
+            <button class="btn-publish-top" onclick="location.href='submit.html'">➕ 发布Demo</button>
+        </div>
+        <div id="pageContent">
+            <div class="empty-sec-tip">正在加载Demo数据…</div>
+        </div>
+    </main>
+    <footer>© 2026 GameDemoShare</footer>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script>
+        const SUPABASE_URL = "https://kczxtbmgigbfofdzkynm.supabase.co";
+        const SUPABASE_ANON_KEY = "sb_publishable_jiyD19NDY1DEc7jVFOQzaw_I-85Ncte";
+        const { createClient } = window.supabase;
+        const client = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        const navUserBox = document.getElementById("navUserBox");
+        const searchInput = document.getElementById("searchInput");
+        const pageContent = document.getElementById("pageContent");
+
+        let fullDemoList = [];
+        let userNickMap = {};
+        let commentStatsMap = {};
+        let globalLoginUser = null;
+        let hotTagList = [];
+        const SHOW_PER_CATEGORY = 4;
+
+        function getRandomSixNum(){
+            return Math.floor(Math.random() * 900000 + 100000);
+        }
+
+        //修复：移除>前面多余空格
+        function escapeHtml(s){
+            if(!s) return "";
+            return s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
+        }
+
+        //数组打乱
+        function shuffleArray(arr){
+            const tmp = [...arr];
+            for(let i = tmp.length - 1; i > 0; i--){
+                const j = Math.floor(Math.random() * (i + 1));
+                [tmp[i], tmp[j]] = [tmp[j], tmp[i]];
+            }
+            return tmp;
+        }
+
+        function getUrlTagParam(){
+            const params = new URLSearchParams(location.search);
+            return params.get("tag") || null;
+        }
+
+        //统计标签热度，返回出现频率最高前6
+        function calcHotTags(demoArr){
+            const tagCount = {};
+            demoArr.forEach(d=>{
+                const parts = (d.tags || "").split(",");
+                parts.forEach(t=>{
+                    const tTrim = t.trim();
+                    if(tTrim) tagCount[tTrim] = (tagCount[tTrim] || 0) + 1;
+                })
+            });
+            const entries = Object.entries(tagCount);
+            entries.sort((a,b)=> b[1] - a[1]);
+            return entries.slice(0,6).map(item=>item[0]);
+        }
+
+        (async function init(){
+            try{
+                await checkAuthStatus();
+                await loadAllData();
+                bindGlobalEvents();
+            }catch(err){
+                pageContent.innerHTML = `<div class="empty-sec-tip">页面初始化异常：${escapeHtml(err.message)}</div>`;
+            }
+        })();
+
+        async function checkAuthStatus(){
+            const {data:{user}} = await client.auth.getUser();
+            globalLoginUser = user || null;
+            if(user){
+                let displayName = user.user_metadata?.nickname;
+                if(!displayName || !displayName.trim()){
+                    displayName = user.email?.includes("@") ? user.email.split("@")[0] : "用户"+getRandomSixNum();
+                }
+                navUserBox.innerHTML = `<a href="profile.html">👤 ${escapeHtml(displayName.trim())}</a>`;
+            }else{
+                navUserBox.innerHTML = `<a href="login.html">登录 / 注册</a>`;
+            }
+        }
+
+        async function loadAllData(){
+            //并发请求：active demo、全部评论
+            const [
+                demoRes,
+                commentRes
+            ] = await Promise.all([
+                client.from("demos").select("*").eq("status","active").order("created_at",{ascending:false}),
+                client.from("comments").select("demo_id,star")
+            ]);
+            if(demoRes.error) throw demoRes.error;
+            fullDemoList = demoRes.data || [];
+            hotTagList = calcHotTags(fullDemoList);
+
+            //统计评论：每个demo评价数量、平均分
+            commentStatsMap = {};
+            if(commentRes.data && commentRes.data.length>0){
+                const group = {};
+                commentRes.data.forEach(c=>{
+                    if(!group[c.demo_id]) group[c.demo_id] = {sum:0,count:0};
+                    group[c.demo_id].sum += Number(c.star);
+                    group[c.demo_id].count +=1;
+                });
+                Object.keys(group).forEach(did=>{
+                    const g = group[did];
+                    commentStatsMap[did] = {
+                        count: g.count,
+                        avgStar: (g.sum / g.count).toFixed(1)
+                    }
+                })
+            }
+
+            //批量获取开发者昵称
+            userNickMap = {};
+            if(fullDemoList.length > 0){
+                const uidSet = new Set(fullDemoList.map(d=>d.user_id).filter(id=>id));
+                const uidList = [...uidSet];
+                const {data:profilesArr} = await client.from("profiles").select("id,nickname").in("id", uidList);
+                if(profilesArr){
+                    profilesArr.forEach(p=> userNickMap[p.id] = p.nickname);
+                }
+            }
+
+            renderPageByUrl();
+        }
+
+        function renderPageByUrl(){
+            const filterTag = getUrlTagParam();
+            if(filterTag){
+                renderSingleTagPage(filterTag);
+            }else{
+                renderMultiSectionPage();
+            }
+        }
+
+        //多板块首页模式：最新Demo + 热度前6标签
+        function renderMultiSectionPage(){
+            let html = "";
+            html += renderSectionHtml({
+                sectionKey:"latest",
+                title:"🔥 最新Demo",
+                sourceList:[...fullDemoList],
+                mode:"latest"
+            });
+            hotTagList.forEach(tagName=>{
+                const filtered = fullDemoList.filter(d=>{
+                    const arr = (d.tags||"").split(",").map(t=>t.trim());
+                    return arr.includes(tagName);
+                });
+                if(filtered.length === 0) return;
+                html += renderSectionHtml({
+                    sectionKey:"tag_"+tagName,
+                    title:`🏷️ ${tagName}`,
+                    sourceList:filtered,
+                    mode:"tag",
+                    tagValue:tagName
+                })
+            })
+            pageContent.innerHTML = html;
+            bindSectionButtons();
+        }
+
+        //单标签全部页面：demo-list.html?tag=xxx
+        function renderSingleTagPage(tagName){
+            const filtered = fullDemoList.filter(d=>{
+                const arr = (d.tags||"").split(",").map(t=>t.trim());
+                return arr.includes(tagName);
+            });
+            let html = `<div style="margin-bottom:16px;"><a href="demo-list.html">← 返回全部</a></div>`;
+            html += renderSectionHtml({
+                sectionKey:"single_"+tagName,
+                title:`🏷️ ${tagName} 全部Demo`,
+                sourceList:filtered,
+                mode:"singleTag",
+                tagValue:tagName,
+                showAll:true
+            });
+            pageContent.innerHTML = html;
+            bindSectionButtons();
+        }
+
+        /**
+         * @param {Object} opt
+         */
+        function renderSectionHtml(opt){
+            const {sectionKey,title,sourceList,mode,tagValue,showAll=false} = opt;
+            let showList;
+            if(showAll){
+                showList = sourceList;
+            }else{
+                showList = shuffleArray(sourceList).slice(0, SHOW_PER_CATEGORY);
+            }
+            let cardHtml = "";
+            if(showList.length === 0){
+                cardHtml = `<div class="empty-sec-tip">暂无Demo</div>`;
+            }else{
+                showList.forEach(demo=>{
+                    cardHtml += buildDemoCardHtml(demo);
+                })
+            }
+            let btnGroupHtml = "";
+            if(mode !== "singleTag"){
+                btnGroupHtml = `
+                <div class="section-btn-group">
+                    <button class="sec-btn btn-rand-play" data-sec-key="${escapeHtml(sectionKey)}" data-mode="${escapeHtml(mode)}" data-tag="${escapeHtml(tagValue||'')}">🎲随机试玩</button>
+                    <button class="sec-btn btn-shuffle" data-sec-key="${escapeHtml(sectionKey)}" data-mode="${escapeHtml(mode)}" data-tag="${escapeHtml(tagValue||'')}">换一换</button>
+                    <button class="sec-btn btn-expand" data-tag="${escapeHtml(tagValue||'')}">展开</button>
+                </div>
+                `
+            }
+            return `
+            <div class="section-block" data-section-key="${escapeHtml(sectionKey)}">
+                <div class="section-header">
+                    <div class="section-title">${escapeHtml(title)}</div>
+                    ${btnGroupHtml}
+                </div>
+                <div class="section-card-row">
+                    ${cardHtml}
+                </div>
+            </div>
+            `
+        }
+
+        //构建单张Demo卡片
+        function buildDemoCardHtml(demo){
+            const devNick = userNickMap[demo.user_id] || "匿名开发者";
+            const stat = commentStatsMap[demo.id] || {count:0, avgStar:"--"};
+            const dt = demo.created_at ? new Date(demo.created_at).toLocaleDateString() : "";
+            const tagArr = (demo.tags||"").split(",").filter(t=>t.trim());
+            const tagHtml = tagArr.slice(0,3).map(t=>`<span class="tag">${escapeHtml(t.trim())}</span>`).join("");
+            const officialLabel = demo.is_official ? `<span class="tag-official">官方</span>` : "";
+
+            return `
+            <div class="demo-card" data-demo-id="${escapeHtml(demo.id)}">
+                <div class="card-cover-placeholder">封面占位</div>
+                <div class="card-body">
+                    <div class="card-title-row">
+                        <span class="card-title">${escapeHtml(demo.name||"未命名")}</span>
+                        ${officialLabel}
+                    </div>
+                    <div class="dev-name">开发者：${escapeHtml(devNick)}</div>
+                    <div class="tag-wrap">${tagHtml}</div>
+                    <div class="card-meta-row">
+                        <span>📅 ${escapeHtml(dt)}</span>
+                        <span>💬评价:${stat.count}</span>
+                        <span>⭐${stat.avgStar}</span>
+                    </div>
+                </div>
+            </div>
+            `;
+        }
+
+        //板块内按钮绑定：卡片点击、随机试玩、换一换、展开
+        function bindSectionButtons(){
+            document.querySelectorAll(".demo-card").forEach(card=>{
+                card.onclick = function(){
+                    const did = this.dataset.demoId;
+                    location.href = `detail.html?id=${encodeURIComponent(did)}`;
+                }
+            });
+
+            document.querySelectorAll(".btn-rand-play").forEach(btn=>{
+                btn.onclick = function(){
+                    const mode = this.dataset.mode;
+                    const tagVal = this.dataset.tag;
+                    let pool;
+                    if(mode === "latest"){
+                        pool = [...fullDemoList];
+                    }else if(mode === "tag"){
+                        pool = fullDemoList.filter(d=>{
+                            const arr = (d.tags||"").split(",").map(t=>t.trim());
+                            return arr.includes(tagVal);
+                        })
+                    }else{
+                        pool = [];
+                    }
+                    if(pool.length === 0){
+                        alert("该分类下暂无Demo");
+                        return;
+                    }
+                    const randItem = pool[Math.floor(Math.random() * pool.length)];
+                    location.href = `detail.html?id=${encodeURIComponent(randItem.id)}`;
+                }
+            });
+
+            document.querySelectorAll(".btn-shuffle").forEach(btn=>{
+                btn.onclick = function(){
+                    const secKey = this.dataset.secKey;
+                    const mode = this.dataset.mode;
+                    const tagVal = this.dataset.tag;
+                    let pool;
+                    if(mode === "latest"){
+                        pool = [...fullDemoList];
+                    }else if(mode === "tag"){
+                        pool = fullDemoList.filter(d=>{
+                            const arr = (d.tags||"").split(",").map(t=>t.trim());
+                            return arr.includes(tagVal);
+                        })
+                    }else{
+                        pool = [];
+                    }
+                    const sectionDom = document.querySelector(`.section-block[data-section-key="${escapeHtml(secKey)}"]`);
+                    if(!sectionDom) return;
+                    const shuffled = shuffleArray(pool).slice(0,SHOW_PER_CATEGORY);
+                    let innerCardHtml = "";
+                    if(shuffled.length ===0){
+                        innerCardHtml = `<div class="empty-sec-tip">暂无Demo</div>`;
+                    }else{
+                        shuffled.forEach(d=> innerCardHtml += buildDemoCardHtml(d));
+                    }
+                    sectionDom.querySelector(".section-card-row").innerHTML = innerCardHtml;
+                    sectionDom.querySelectorAll(".demo-card").forEach(card=>{
+                        card.onclick = function(){
+                            const did = this.dataset.demoId;
+                            location.href = `detail.html?id=${encodeURIComponent(did)}`;
+                        }
+                    })
+                }
+            });
+
+            document.querySelectorAll(".btn-expand").forEach(btn=>{
+                btn.onclick = function(){
+                    const t = this.dataset.tag;
+                    if(!t) return;
+                    location.href = `demo-list.html?tag=${encodeURIComponent(t)}`;
+                }
+            });
+        }
+
+        //搜索框客户端过滤
+        function bindGlobalEvents(){
+            searchInput.oninput = function(){
+                const kw = this.value.toLowerCase().trim();
+                document.querySelectorAll(".demo-card").forEach(card=>{
+                    const nameText = card.querySelector(".card-title").innerText.toLowerCase();
+                    const tagText = card.querySelector(".tag-wrap").innerText.toLowerCase();
+                    if(!kw || nameText.includes(kw) || tagText.includes(kw)){
+                        card.style.display = "";
+                    }else{
+                        card.style.display = "none";
+                    }
+                })
+            }
+        }
+    </script>
+</body>
+</html>
+
