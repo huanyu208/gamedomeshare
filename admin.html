@@ -123,8 +123,9 @@
     </style>
 </head>
 <body>
+    <!-- 登录表单 -->
     <div class="password-lock" id="lockScreen">
-        <h2>站长后台登录（Supabase账号）</h2>
+        <h2>站长后台登录（仅限管理员）</h2>
         <div class="form-item">
             <label>管理员邮箱</label>
             <input type="email" id="adminEmail" placeholder="admin@gamedemoshare.com">
@@ -136,6 +137,7 @@
         <div id="lockTip" style="color:#ff8888;margin:8px 0;"></div>
         <button class="btn-blue" id="loginBtn">登录后台</button>
     </div>
+    <!-- 登录成功后台主界面 -->
     <div id="adminMain" style="display:none;">
         <div class="header-bar">
             <h1>站长总控制台</h1>
@@ -151,6 +153,7 @@
             <button class="tab-btn" data-tab="tab-achievement">🏆 荣誉配置</button>
             <button class="tab-btn" data-tab="tab-bounty">💰 悬赏管理</button>
         </div>
+        <!-- 数据看板 -->
         <div class="tab-panel show" id="tab-dashboard">
             <h3>总览统计</h3>
             <div class="stat-card-wrap" id="statCardBox">
@@ -219,6 +222,7 @@
             <h3>用户管理（封禁 / 设置官方账号）</h3>
             <div id="userListBox"></div>
         </div>
+        <!-- 🏆荣誉配置面板 -->
         <div class="tab-panel" id="tab-achievement">
             <h3>添加新荣誉</h3>
             <div class="form-item">
@@ -237,9 +241,9 @@
                 <label>条件类型（condition_type）</label>
                 <select id="achCondType">
                     <option value="registration_order">registration_order — 注册名次</option>
-                    <option value="demo_count">demo_count — 发布 Demo 数</option>
-                    <option value="comment_count">comment_count — 评论数</option>
-                    <option value="approved_count">approved_count — 高价值评论数</option>
+                    <option value="demo_publish_count">demo_publish_count — 发布数量</option>
+                    <option value="comment_total_count">comment_total_count — 评论数量</option>
+                    <option value="high_value_count">high_value_count — 高价值评论数</option>
                 </select>
             </div>
             <div class="form-item">
@@ -248,7 +252,7 @@
             </div>
             <div class="form-item">
                 <label>额外条件 extra_conditions（JSON，选填）</label>
-                <textarea id="achExtraCond" placeholder='示例：[{"type":"demo_count","value":3}]' rows="3"></textarea>
+                <textarea id="achExtraCond" placeholder='示例：[{"type":"demo_publish_count","value":3}]' rows="3"></textarea>
                 <div style="font-size:12px;color:#aaa;margin-top:4px;">提示：前3000名注册 + 3个Demo + 20条高价值认可 + 邀请5人，就用主条件+额外条件实现</div>
             </div>
             <button class="btn-blue" id="btnAddAch">添加荣誉</button>
@@ -256,6 +260,7 @@
             <h3>已有荣誉列表</h3>
             <div id="achListBox">加载中…</div>
         </div>
+        <!-- 💰悬赏管理面板（UI占位） -->
         <div class="tab-panel" id="tab-bounty">
             <h3>悬赏管理</h3>
             <div style="margin-top:16px;line-height:1.7;color:#bbbbbb;">
@@ -269,11 +274,16 @@ const SUPABASE_URL = "https://kczxtbmgigbfofdzkynm.supabase.co";
 const SUPABASE_ANON_KEY = "sb_publishable_jiyD19NDY1DEc7jVFOQzaw_I-85Ncte";
 const { createClient } = window.supabase;
 const client = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+// 🚨 【极其重要】请把下面的邮箱换成你刚刚在 Supabase 后台创建的管理员邮箱！一字不差！
+const ADMIN_EMAIL = "zhoulou_1219qqcom@qq.com" 
+
 const lockScreen = document.getElementById("lockScreen");
 const adminMain = document.getElementById("adminMain");
 const loginBtn = document.getElementById("loginBtn");
 const logoutBtn = document.getElementById("logoutBtn");
 const lockTip = document.getElementById("lockTip");
+//荣誉配置DOM
 const achName = document.getElementById("achName");
 const achIcon = document.getElementById("achIcon");
 const achDesc = document.getElementById("achDesc");
@@ -283,13 +293,21 @@ const achExtraCond = document.getElementById("achExtraCond");
 const btnAddAch = document.getElementById("btnAddAch");
 const achListBox = document.getElementById("achListBox");
 
+// 1. 检查登录状态（带白名单校验）
 (async function checkSession(){
     const {data:{session}} = await client.auth.getSession();
     if(session){
-        showAdminPanel();
+        if(session.user.email === ADMIN_EMAIL){
+            showAdminPanel();
+        }else{
+            // 不是管理员，强制退出
+            await client.auth.signOut();
+            lockTip.innerText = "检测到非管理员登录，已强制退出。";
+        }
     }
 })();
 
+// 2. 登录逻辑（带白名单校验）
 loginBtn.onclick = async function(){
     lockTip.innerText = "";
     const email = document.getElementById("adminEmail").value.trim();
@@ -299,8 +317,16 @@ loginBtn.onclick = async function(){
         return;
     }
     try{
-        const {error} = await client.auth.signInWithPassword({email, password:pwd});
+        const {data, error} = await client.auth.signInWithPassword({email, password:pwd});
         if(error) throw error;
+        
+        // 核心安全防线：如果登录的邮箱不是 ADMIN_EMAIL，立刻踢出去
+        if(data.user.email !== ADMIN_EMAIL){
+            await client.auth.signOut();
+            lockTip.innerText = "权限不足：您不是站长，无法进入后台！";
+            return;
+        }
+        
         showAdminPanel();
     }catch(err){
         lockTip.innerText = "登录失败："+err.message;
@@ -319,6 +345,7 @@ function showAdminPanel(){
     initAdminPage();
 }
 
+// Tab切换
 document.querySelectorAll(".tab-btn").forEach(btn=>{
     btn.onclick = function(){
         document.querySelectorAll(".tab-btn").forEach(b=>b.classList.remove("active"));
@@ -343,12 +370,14 @@ async function initAdminPage(){
     await loadDashboard();
 }
 
+// ========== 数据看板 ==========
 async function loadDashboard(){
     const statCardBox = document.getElementById("statCardBox");
     const rankInvite = document.getElementById("rankInvite");
     const rankHighVal = document.getElementById("rankHighVal");
     const rankPublish = document.getElementById("rankPublish");
     try{
+        //并发统计总数
         const [
             {count:userCount},
             {count:demoCount},
@@ -363,6 +392,7 @@ async function loadDashboard(){
             <div class="stat-card"><div>总Demo数</div><div class="stat-num">${demoCount??0}</div></div>
             <div class="stat-card"><div>总评论数</div><div class="stat-num">${cmtCount??0}</div></div>
         `;
+        //邀请榜前50
         const {data:inviteRank} = await client.from("profiles")
             .select("nickname,display_id,invite_valid_count")
             .order("invite_valid_count",{ascending:false})
@@ -375,6 +405,7 @@ async function loadDashboard(){
         }else inviteHtml = "<div class='rank-item'>暂无数据</div>";
         rankInvite.innerHTML = inviteHtml;
 
+        //被认可榜前50
         const {data:highValRank} = await client.from("profiles")
             .select("nickname,display_id,high_value_count")
             .order("high_value_count",{ascending:false})
@@ -387,6 +418,7 @@ async function loadDashboard(){
         }else highValHtml = "<div class='rank-item'>暂无数据</div>";
         rankHighVal.innerHTML = highValHtml;
 
+        //发布榜：统计每个user_id的demo数量，取前50
         const {data:allDemos} = await client.from("demos").select("user_id");
         const pubCountMap = {};
         if(allDemos){
@@ -465,6 +497,7 @@ async function loadAllGames(){
         const {data,error}=await client.from("demos").select("*").order("created_at",{ascending:false});
         if(error) throw error;
         const games = data||[];
+        // 获取开发者昵称映射
         const uidList = [...new Set(games.map(item=>item.user_id).filter(uid=>uid))];
         let devNickMap = {};
         if(uidList.length>0){
@@ -553,6 +586,7 @@ window.delReview = async function(rid){
     }catch(e){alert("删除评论失败"+e.message);}
 }
 
+// 站长信箱：读取反馈
 async function loadFeedbacks(){
     const box = document.getElementById("feedbackListBox");
     box.innerHTML="加载反馈...";
@@ -591,6 +625,7 @@ window.delFeedback = async function(fid){
     }
 }
 
+// 用户管理
 async function loadAllUsers(){
     const box = document.getElementById("userListBox");
     box.innerHTML="加载用户列表...";
@@ -625,28 +660,23 @@ window.toggleBanned = async function(uid,currentBan){
     }catch(e){alert("操作失败："+e.message);}
 }
 
-// ✅ 修改：设置用户为官方时，同步更新他发布的所有 Demo
+// ✅ 修正：设置用户为官方时，同步更新他发布的所有 Demo
 window.toggleUserOfficial = async function(uid,currentOff){
     try{
         const newVal = !currentOff;
         // 1. 更新用户 profile
-        const {error:uErr} = await client.from("profiles")
-            .update({is_official: newVal})
-            .eq("id", uid);
+        const {error:uErr} = await client.from("profiles").update({is_official:newVal}).eq("id",uid);
         if(uErr) throw uErr;
-        // 2. 同步更新该用户发布的所有 Demo 的 is_official 字段
-        const {error:dErr} = await client.from("demos")
-            .update({is_official: newVal})
-            .eq("user_id", uid);
+        // 2. 同步更新他发布的所有 Demo
+        const {error:dErr} = await client.from("demos").update({is_official:newVal}).eq("user_id", uid);
         if(dErr) throw dErr;
+        
         await loadAllUsers();
         await loadAllGames();
-        alert(newVal ? "✅ 已设为官方，该用户发布的所有 Demo 已同步打上官方标签" : "✅ 已取消官方，该用户所有 Demo 的官方标签已移除");
-    }catch(e){
-        alert("操作失败："+e.message);
-    }
+    }catch(e){alert("操作失败："+e.message);}
 }
 
+// ========== 荣誉配置相关 ==========
 async function loadAchievementsList(){
     achListBox.innerHTML = "加载荣誉列表…";
     try{
@@ -724,6 +754,7 @@ function bindAchFormEvents(){
             };
             const {error} = await client.from("achievements").insert([insertObj]);
             if(error) throw error;
+            //清空表单
             achName.value = "";
             achIcon.value = "";
             achDesc.value = "";
